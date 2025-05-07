@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: cib
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/cib_db
+    username: pspuser
+    password: psppassword
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+server:
+  port: 8090
