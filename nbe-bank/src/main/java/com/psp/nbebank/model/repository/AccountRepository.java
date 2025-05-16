@@ -8,17 +8,19 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface AccountRepository extends JpaRepository<Account, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT a FROM Account a WHERE a.accountNumber = :accountNumber")
-    Optional<Account> findByAccountNumberForUpdate(@Param("accountNumber") String accountNumber);
+    Optional<Account> findForUpdateByAccountNumber(String accountNumber);
 
-    @Query("SELECT a.balance FROM Account a WHERE a.accountNumber = :accountNumber")
-    Double findBalanceByAccountNumber(@Param("accountNumber") String accountNumber);
+    @Query(
+            "SELECT a.balance FROM Account a WHERE a.accountNumber = :accountNumber"
+    )
+    @Lock(LockModeType.PESSIMISTIC_READ)
+    Optional<Double> findBalanceByAccountNumber(@Param("accountNumber") String accountNumber);
 
-    boolean existsByAccountNumber(String accountNumber);
-
+    List<Account> findByCardId(Long cardId);
 }

@@ -8,6 +8,7 @@ public enum TransactionStatus {
     ABORTED,                // Transaction aborted
     COMMITTING,             // Sending commit requests
     COMMITTED,              // Successfully completed
+    ROLLING_BACK,            // Rolled back after commit
     ROLLED_BACK,            // Rolled back after failure
     FAILED,                  // Unrecoverable failure
     TIMEOUT,                // Transaction timed out

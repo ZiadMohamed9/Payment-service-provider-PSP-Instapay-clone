@@ -1,117 +1,158 @@
 package com.psp.nbebank.model.service.impl;
 
+
 import com.psp.nbebank.common.exception.AccountNotFoundException;
 import com.psp.nbebank.common.exception.TransactionException;
 import com.psp.nbebank.model.dto.request.BankRequest;
 import com.psp.nbebank.model.dto.response.TransactionResponse;
 import com.psp.nbebank.model.entity.Account;
 import com.psp.nbebank.model.entity.Transaction;
-import com.psp.nbebank.model.enums.BankTransactionStatus;
 import com.psp.nbebank.model.enums.TransactionStatus;
 import com.psp.nbebank.model.enums.TransactionType;
 import com.psp.nbebank.model.repository.AccountRepository;
 import com.psp.nbebank.model.repository.TransactionRepository;
 import com.psp.nbebank.model.service.TransactionService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Slf4j
 public class TransactionServiceImpl implements TransactionService {
     private final TransactionRepository transactionRepository;
     private final AccountRepository accountRepository;
 
     @Override
-    @Transactional(timeout = 10)
+    @Transactional(isolation = Isolation.SERIALIZABLE, rollbackFor = Exception.class)
     public TransactionResponse prepareTransaction(BankRequest request) {
-        try {
-            // Step 1: Validate the request
-            validateRequest(request);
-
-            // Step 2: Initiate the transaction
-            Transaction transaction = initiateTransaction(request);
-
-            // Step 3: Save the transaction to the database
-            transactionRepository.save(transaction);
-
-            // Step 4: Return the transaction response
-            return buildResponse(transaction.getId(), BankTransactionStatus.PREPARED, "Transaction prepared successfully");
-        } catch (Exception e) {
-            return buildResponse(null, BankTransactionStatus.ABORTED, "Transaction preparation failed: " + e.getMessage());
-        }
-    }
-
-    @Override
-    @Transactional(timeout = 10)
-    public TransactionResponse commitTransaction(Long transactionId) {
-        Transaction transaction = getTransactionById(transactionId);
+        log.info("Initiating transaction for account: {}", request.getAccountNumber());
+        Transaction transaction = initiateTransaction(request);
+        log.info("Transaction initiated successfully: {}", transaction);
 
         try {
-            updateAccountBalance(transaction);
-
-            transaction.setStatus(TransactionStatus.COMMITTED);
+            transaction.setStatus(TransactionStatus.PREPARED);
             transactionRepository.save(transaction);
-
-            return buildResponse(transaction.getId(), BankTransactionStatus.COMMITTED, "Transaction committed successfully");
+            log.info("Transaction prepared successfully: {}", transaction);
         } catch (Exception e) {
-            transaction.setStatus(TransactionStatus.ABORTED);
-            transactionRepository.save(transaction);
-
-            return buildResponse(transaction.getId(), BankTransactionStatus.ABORTED, "Transaction commit failed: " + e.getMessage());
-        }
-    }
-
-    @Override
-    @Transactional(timeout = 10)
-    public TransactionResponse rollbackTransaction(Long transactionId) {
-        Transaction transaction = getTransactionById(transactionId);
-
-        try {
-            updateAccountBalance(transaction);
-
-            transaction.setStatus(TransactionStatus.ROLLED_BACK);
-            transactionRepository.save(transaction);
-
-            return buildResponse(transaction.getId(), BankTransactionStatus.ROLLED_BACK, "Transaction rolled back successfully");
-        } catch (Exception e) {
+            log.error("Error preparing transaction: {}", e.getMessage());
             transaction.setStatus(TransactionStatus.FAILED);
             transactionRepository.save(transaction);
+            log.info("In preparation Transaction marked as failed: {}", transaction);
 
-            return buildResponse(transaction.getId(), BankTransactionStatus.FAILED, "Transaction rollback failed: " + e.getMessage());
+            throw new RuntimeException(e);
+        }
+
+        return buildResponse(transaction.getId(), transaction.getStatus(), "Transaction prepared successfully");
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.SERIALIZABLE, rollbackFor = Exception.class)
+    public TransactionResponse commitTransaction(Long transactionId) {
+        log.info("Fetching transaction for commit: {}", transactionId);
+        Transaction transaction = getTransactionById(transactionId);
+        log.info("Transaction fetched successfully for commiting: {}", transaction);
+
+        try {
+            if (transaction.getStatus() != TransactionStatus.PREPARED) {
+                log.info("Transaction is not in a valid state for commit: {}", transaction.getStatus());
+                throw new TransactionException("Transaction is not in a valid state for commit");
+            }
+
+            log.info("Committing transaction: {}", transaction);
+            transaction.setStatus(TransactionStatus.COMMITTING);
+            transactionRepository.save(transaction);
+
+            log.info("Updating account balance for transaction: {}", transaction);
+            updateAccountBalance(transaction);
+            log.info("Account balance updated successfully for transaction: {}", transaction);
+
+            log.info("Marking transaction as committed: {}", transaction);
+            transaction.setStatus(TransactionStatus.COMMITTED);
+            transactionRepository.save(transaction);
+            log.info("Transaction committed successfully: {}", transaction);
+
+            return buildResponse(transaction.getId(), transaction.getStatus(), "Transaction committed successfully");
+        } catch (Exception e) {
+            log.error("Error committing transaction: {}", e.getMessage());
+            transaction.setStatus(TransactionStatus.ABORTED);
+            transactionRepository.save(transaction);
+            log.info("Transaction marked as aborted: {}", transaction);
+
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.SERIALIZABLE, rollbackFor = Exception.class)
+    public TransactionResponse rollbackTransaction(Long transactionId) {
+        log.info("Fetching transaction for rollback: {}", transactionId);
+        Transaction transaction = getTransactionById(transactionId);
+        log.info("Transaction fetched successfully for rollback: {}", transaction);
+
+        try {
+            if (!transaction.getStatus().equals(TransactionStatus.COMMITTED)) {
+                log.info("Transaction is not in a valid state for rollback: {}", transaction.getStatus());
+                return buildResponse(transaction.getId(), transaction.getStatus(), "Transaction rolled back successfully");
+            }
+
+            log.info("Rolling back transaction: {}", transaction);
+            transaction.setStatus(TransactionStatus.ROLLING_BACK);
+            transactionRepository.save(transaction);
+
+            log.info("Updating account balance for rollback transaction: {}", transaction);
+            updateAccountBalance(transaction);
+            log.info("Account balance updated successfully for rollback transaction: {}", transaction);
+
+            log.info("Marking transaction as rolled back: {}", transaction);
+            transaction.setStatus(TransactionStatus.ROLLED_BACK);
+            transactionRepository.save(transaction);
+            log.info("Transaction rolled back successfully: {}", transaction);
+
+            return buildResponse(transaction.getId(), transaction.getStatus(), "Transaction rolled back successfully");
+        } catch (Exception e) {
+            log.error("Error rolling back transaction: {}", e.getMessage());
+            transaction.setStatus(TransactionStatus.FAILED);
+            transactionRepository.save(transaction);
+            log.info("In rolling back Transaction marked as failed: {}", transaction);
+
+            throw new RuntimeException(e);
         }
     }
 
     @Override
     public Transaction getTransactionById(Long transactionId) {
-        return transactionRepository.findById(transactionId)
+        return transactionRepository.findForUpdateById(transactionId)
                 .orElseThrow(() -> new TransactionException("Transaction not found"));
     }
 
     private void updateAccountBalance(Transaction transaction) {
-        Account account = transaction.getAccount();
+        String accountNumber = transaction.getAccount().getAccountNumber();
+        Account account = accountRepository.findForUpdateByAccountNumber(accountNumber)
+                .orElseThrow(() -> new AccountNotFoundException("Account not found"));
 
         if (account == null) {
             throw new AccountNotFoundException("Account not found");
         }
 
         switch (transaction.getStatus()) {
-            case COMMITTED:
-                if (transaction.getTransactionType() == TransactionType.WITHDRAWAL &&
-                        checkBalance(account, transaction.getAmount())) {
+            case COMMITTING:
+                if (transaction.getTransactionType().equals(TransactionType.WITHDRAWAL) &&
+                checkBalance(account, transaction.getAmount())) {
                     account.setBalance(account.getBalance() - transaction.getAmount());
                 }
-                else if (transaction.getTransactionType() == TransactionType.DEPOSIT) {
+                else if (transaction.getTransactionType().equals(TransactionType.DEPOSIT)) {
                     account.setBalance(account.getBalance() + transaction.getAmount());
                 }
                 break;
-            case ROLLED_BACK:
-                if (transaction.getTransactionType() == TransactionType.WITHDRAWAL) {
+            case ROLLING_BACK:
+                if (transaction.getTransactionType().equals(TransactionType.WITHDRAWAL)) {
                     account.setBalance(account.getBalance() + transaction.getAmount());
                 }
-                else if (transaction.getTransactionType() == TransactionType.DEPOSIT &&
-                        checkBalance(account, transaction.getAmount())) {
+                else if (transaction.getTransactionType().equals(TransactionType.DEPOSIT) &&
+                checkBalance(account, transaction.getAmount())) {
                     account.setBalance(account.getBalance() - transaction.getAmount());
                 }
                 break;
@@ -122,19 +163,21 @@ public class TransactionServiceImpl implements TransactionService {
     private boolean checkBalance(Account account, Double amount) {
         return account.getBalance() >= amount;
     }
-
+    
     private Transaction initiateTransaction(BankRequest request) {
-        Account account = accountRepository.findByAccountNumberForUpdate(request.getAccountNumber())
+        validateRequest(request);
+
+        Account account = accountRepository.findForUpdateByAccountNumber(request.getAccountNumber())
                 .orElseThrow(() -> new AccountNotFoundException("Account not found"));
 
         return Transaction.builder()
                 .Account(account)
                 .amount(request.getAmount())
                 .transactionType(request.getType())
-                .status(TransactionStatus.PREPARED)
+                .status(TransactionStatus.INITIATED)
                 .build();
     }
-
+    
     private void validateRequest(BankRequest request) {
         if (request.getAmount() <= 0) {
             throw new IllegalArgumentException("Amount must be greater than zero");
@@ -145,12 +188,9 @@ public class TransactionServiceImpl implements TransactionService {
         if (request.getType() == null) {
             throw new IllegalArgumentException("Transaction type must not be null");
         }
-        if (!accountRepository.existsByAccountNumber(request.getAccountNumber())) {
-            throw new AccountNotFoundException("Account not found");
-        }
     }
 
-    private TransactionResponse buildResponse(Long transactionId, BankTransactionStatus status, String message) {
+    private TransactionResponse buildResponse(Long transactionId, TransactionStatus status, String message) {
         return TransactionResponse.builder()
                 .transactionId(transactionId)
                 .status(status)

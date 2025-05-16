@@ -5,21 +5,25 @@ import com.psp.instapay.common.client.BankClientFactory;
 import com.psp.instapay.common.exception.AccountNotFoundException;
 import com.psp.instapay.common.exception.InsufficientBalanceException;
 import com.psp.instapay.common.exception.TransactionException;
+import com.psp.instapay.common.exception.UserNotFoundException;
 import com.psp.instapay.model.dto.request.BankRequest;
 import com.psp.instapay.model.dto.request.SendMoneyRequest;
 import com.psp.instapay.model.dto.response.TransactionResponse;
 import com.psp.instapay.model.entity.Account;
 import com.psp.instapay.model.entity.Transaction;
-import com.psp.instapay.model.enums.BankTransactionStatus;
+import com.psp.instapay.model.entity.User;
 import com.psp.instapay.model.enums.TransactionStatus;
 import com.psp.instapay.model.enums.TransactionType;
 import com.psp.instapay.model.repository.AccountRepository;
 import com.psp.instapay.model.repository.TransactionRepository;
+import com.psp.instapay.model.repository.UserRepository;
 import com.psp.instapay.model.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.TransactionTimedOutException;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -29,29 +33,28 @@ import java.time.LocalDateTime;
 @Slf4j
 public class TransactionServiceImpl implements TransactionService {
     private final AccountRepository accountRepository;
-    private final BankClientFactory bankClientFactory;
     private final TransactionRepository transactionRepository;
+    private final UserRepository userRepository;
+    private final BankClientFactory bankClientFactory;
 
     @Override
-    @Transactional(timeout = 30)
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.SERIALIZABLE, rollbackFor = Exception.class)
     public TransactionResponse sendMoney(SendMoneyRequest request) {
+        // Step 1: Validate the request and initiate the transaction
         log.info("Initiating transaction for request: {}", request);
-        Transaction transaction = null;
-
+        Transaction transaction;
         try {
-            // Step 1: Set up the transaction
             transaction = initiateTransaction(request);
             transactionRepository.save(transaction);
         } catch (RuntimeException e) {
             log.error("Transaction initiation failed: {}", e.getMessage());
-            return TransactionResponse.builder()
-                    .transactionId(transaction != null ? transaction.getId() : null)
-                    .status(TransactionStatus.FAILED)
-                    .message("Transaction initiation failed: " + e.getMessage())
-                    .build();
+            throw e;
         }
+        log.info("Transaction initiated successfully: {}", transaction.getId());
+
 
         // Step 2: Create bank requests for both source and destination accounts
+        log.info("Creating bank requests for transaction: {}", transaction.getId());
         BankRequest sourceBankRequest = createBankRequest(
                 request.getSourceAccountNumber(),
                 TransactionType.WITHDRAWAL,
@@ -61,61 +64,101 @@ public class TransactionServiceImpl implements TransactionService {
                 request.getDestinationAccountNumber(),
                 TransactionType.DEPOSIT,
                 request.getAmount());
-        
+        log.info("Bank requests created successfully for transaction: {}", transaction.getId());
+
+
         // Step 3: Start the transaction process
+        // Step 1: Get the bank clients for both source and destination banks
+        log.info("Getting bank clients for transaction: {}", transaction.getId());
+        BankClient sourceBankClient;
+        BankClient destinationBankClient;
         try {
-            // Step 1: Get the bank clients for both source and destination banks
-            BankClient sourceBankClient = getBankClient(transaction.getFromBank().getName());
-            BankClient destinationBankClient = getBankClient(transaction.getToBank().getName());
+            sourceBankClient = getBankClient(transaction.getFromBank().getName());
+            destinationBankClient = getBankClient(transaction.getToBank().getName());
+        } catch (Exception e) {
+            log.error("Failed to get bank clients: {}", e.getMessage());
+            transaction.setStatus(TransactionStatus.FAILED);
+            transactionRepository.save(transaction);
 
+            throw new RuntimeException("Failed to get bank clients");
+        }
+        log.info("Bank clients obtained successfully for transaction: {}", transaction.getId());
+
+
+        try {
             // Step 2: Request preparation from the source and destination banks and check their statuses
-            TransactionStatus sourceBankStatus = requestPrepare(sourceBankClient, sourceBankRequest);
-            TransactionStatus destinationBankStatus = requestPrepare(destinationBankClient, destinationBankRequest);
+            log.info("Requesting preparation from banks for transaction: {}, {}", transaction.getId(), transaction.getStatus());
+            TransactionResponse sourceBankResponse = requestPrepare(sourceBankClient, sourceBankRequest);
+            TransactionResponse destinationBankResponse = requestPrepare(destinationBankClient, destinationBankRequest);
 
+            TransactionStatus sourceBankStatus = sourceBankResponse.getStatus();
+            TransactionStatus destinationBankStatus = destinationBankResponse.getStatus();
+
+            Long sourceTransactionId = sourceBankResponse.getTransactionId();
+            Long destinationTransactionId = destinationBankResponse.getTransactionId();
+            log.info("Banks responded successfully for transaction preparation: {}, {}", transaction.getId(), transaction.getStatus());
+
+
+            log.info("Preparation statuses: source: {}, destination: {}", sourceBankStatus, destinationBankStatus);
             if (!sourceBankStatus.equals(TransactionStatus.PREPARED) ||
                     !destinationBankStatus.equals(TransactionStatus.PREPARED)) {
-                log.error("Preparation failed for transaction: {}", transaction.getId());
-
-                handleRollback(sourceBankClient, destinationBankClient, transaction);
-
-                transaction.setStatus(TransactionStatus.ROLLED_BACK);
-                transactionRepository.save(transaction);
+                log.error("Preparation failed for transaction: {}, {}", transaction.getId(), transaction.getStatus());
+                handleRollback(sourceBankClient, destinationBankClient, transaction,
+                        sourceTransactionId, destinationTransactionId);
+                log.info("Transaction preparation rolled back successfully: {}, {}", transaction.getId(), transaction.getStatus());
 
                 throw new TransactionException("Transaction preparation failed");
             }
 
+
+            log.info("Transaction preparation completed successfully: {}, {}", transaction.getId(), transaction.getStatus());
             transaction.setStatus(TransactionStatus.PREPARED);
             transactionRepository.save(transaction);
+            log.info("Transaction marked as prepared: {}, {}", transaction.getId(), transaction.getStatus());
+
 
             // Step 4: Request commitment from both banks
-            sourceBankStatus = requestCommit(sourceBankClient, transaction.getId());
-            destinationBankStatus = requestCommit(destinationBankClient, transaction.getId());
+            log.info("Requesting commit from banks for transaction: {}, {}", transaction.getId(), transaction.getStatus());
+            sourceBankStatus = requestCommit(sourceBankClient, sourceTransactionId);
+            destinationBankStatus = requestCommit(destinationBankClient, destinationTransactionId);
+            log.info("Banks responded successfully for transaction commit: {}, {}", transaction.getId(), transaction.getStatus());
+
 
             // Step 5: Check the status of both banks' statuses again
+            log.info("Commit statuses: source: {}, destination: {}", sourceBankStatus, destinationBankStatus);
             if (!sourceBankStatus.equals(TransactionStatus.COMMITTED) ||
                     !destinationBankStatus.equals(TransactionStatus.COMMITTED)) {
-                log.error("Commit failed for transaction: {}", transaction.getId());
-
-                handleRollback(sourceBankClient, destinationBankClient, transaction);
-
-                transaction.setStatus(TransactionStatus.ROLLED_BACK);
-                transactionRepository.save(transaction);
+                log.error("Commit failed for transaction: {}, {}", transaction.getId(), transaction.getStatus());
+                handleRollback(sourceBankClient, destinationBankClient, transaction,
+                        sourceTransactionId, destinationTransactionId);
+                log.info("Transaction commit rolled back successfully: {}, {}", transaction.getId(), transaction.getStatus());
 
                 throw new TransactionException("Transaction commit failed");
             }
-            
+
+
+            log.info("Transaction committed successfully: {}, {}", transaction.getId(), transaction.getStatus());
             transaction.setStatus(TransactionStatus.COMMITTED);
             transactionRepository.save(transaction);
+            log.info("Transaction marked as committed: {}, {}", transaction.getId(), transaction.getStatus());
+
 
             // Step 6: Update the account balances
+            log.info("Updating account balances for transaction: {}, {}", transaction.getId(), transaction.getStatus());
             updateAccountBalance(transaction.getFromAccount().getAccountNumber(), sourceBankClient);
             updateAccountBalance(transaction.getToAccount().getAccountNumber(), destinationBankClient);
+            log.info("Account balances updated successfully for transaction: {}, {}", transaction.getId(), transaction.getStatus());
+
 
             // Step 7: Update the transaction in the database
+            log.info("Marking transaction as successful: {}, {}", transaction.getId(), transaction.getStatus());
             transaction.setStatus(TransactionStatus.SUCCESS);
             transactionRepository.save(transaction);
+            log.info("Transaction marked as successful: {}, {}", transaction.getId(), transaction.getStatus());
 
-            log.info("Transaction completed successfully: {}", transaction.getId());
+
+            log.info("Transaction completed successfully: {}, {}", transaction.getId(), transaction.getStatus());
+
 
             // Step 9: Return the transaction response
             return TransactionResponse.builder()
@@ -123,50 +166,76 @@ public class TransactionServiceImpl implements TransactionService {
                     .status(transaction.getStatus())
                     .message("Transaction completed successfully")
                     .build();
+        } catch (TransactionException e) {
+            log.error("Transaction ended: {}", e.getMessage());
+
+            throw e;
         } catch (Exception e) {
             log.error("Transaction failed: {}", e.getMessage());
-            return TransactionResponse.builder()
-                    .transactionId(transaction.getId())
-                    .status(transaction.getStatus())
-                    .message(e.getMessage())
-                    .build();
+            transaction.setStatus(TransactionStatus.FAILED);
+            transactionRepository.save(transaction);
+            log.info("Transaction marked as failed: {}", transaction.getId());
+
+            throw new RuntimeException(e);
         }
     }
 
     private void updateAccountBalance(String accountNumber, BankClient bankClient) {
-        Account account = accountRepository.findByAccountNumber(accountNumber)
+        Account account = accountRepository.findForUpdateByAccountNumber(accountNumber)
                 .orElseThrow(() -> new AccountNotFoundException("Account not found"));
-        Double newBalance = (Double) bankClient.getBalance(accountNumber).getData();
+        Double newBalance = bankClient.getBalance(accountNumber);
         account.setBalance(newBalance);
         accountRepository.save(account);
     }
 
-    private void handleRollback(BankClient sourceBankClient, BankClient destinationBankClient, Transaction transaction) {
-        TransactionStatus sourceBankStatus = requestRollback(sourceBankClient, transaction.getId());
-        TransactionStatus destinationBankStatus = requestRollback(destinationBankClient, transaction.getId());
+    private void handleRollback(
+            BankClient sourceBankClient,
+            BankClient destinationBankClient,
+            Transaction transaction,
+            Long sourceTransactionId,
+            Long destinationTransactionId) {
+        log.info("Rolling back transaction: {}", transaction.getId());
 
-        if (!sourceBankStatus.equals(TransactionStatus.ROLLED_BACK) ||
-                !destinationBankStatus.equals(TransactionStatus.ROLLED_BACK)) {
-            log.error("Rollback failed for transaction: {}", transaction);
-            transaction.setStatus(TransactionStatus.FAILED);
+        TransactionStatus sourceBankStatus;
+        TransactionStatus destinationBankStatus;
+        try {
+            log.info("Requesting rollback from banks for transaction: {}", transaction.getId());
+
+            sourceBankStatus = requestRollback(sourceBankClient, sourceTransactionId);
+            destinationBankStatus = requestRollback(destinationBankClient, destinationTransactionId);
+
+            log.info("Banks responded successfully for transaction rollback: {}", transaction.getId());
+
+            log.info("Rollback statuses: source: {}, destination: {}", sourceBankStatus, destinationBankStatus);
+
+            if (!sourceBankStatus.equals(TransactionStatus.ROLLED_BACK) ||
+                    !destinationBankStatus.equals(TransactionStatus.ROLLED_BACK)) {
+                throw new TransactionException("Transaction rollback failed");
+            }
+
+            log.info("Transaction rolled back successfully: {}", transaction.getId());
+
+            transaction.setStatus(TransactionStatus.ROLLED_BACK);
             transactionRepository.save(transaction);
-            throw new TransactionException("Transaction rollback failed");
+
+            log.info("Transaction marked as rolled back: {}", transaction.getId());
+        } catch (Exception e) {
+            log.error("Rollback request failed: {}", e.getMessage());
+
+            throw new RuntimeException(e);
         }
     }
 
     private TransactionStatus requestRollback(BankClient bankClient, Long transactionId) {
-        TransactionResponse response = (TransactionResponse) bankClient.rollbackTransaction(transactionId).getData();
-        return response.getStatus();
+        return bankClient.rollbackTransaction(transactionId).getStatus();
     }
 
     private TransactionStatus requestCommit(BankClient bankClient, Long transactionId) {
-        TransactionResponse response = (TransactionResponse) bankClient.commitTransaction(transactionId).getData();
-        return response.getStatus();
+        return bankClient.commitTransaction(transactionId).getStatus();
     }
 
-    private TransactionStatus requestPrepare(BankClient bankClient, BankRequest request) {
-        TransactionResponse response = (TransactionResponse) bankClient.prepareTransaction(request).getData();
-        return response.getStatus();
+    private TransactionResponse requestPrepare(BankClient bankClient, BankRequest request) {
+        return bankClient.prepareTransaction(request);
     }
 
     private BankClient getBankClient(String bankName) {
@@ -182,9 +251,13 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     private Transaction initiateTransaction(SendMoneyRequest request) {
-        Account sourceAccount = accountRepository.findByAccountNumberForUpdate(request.getSourceAccountNumber())
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Account sourceAccount = accountRepository.findForUpdateByUserAndAccountNumber(user, request.getSourceAccountNumber())
                 .orElseThrow(() -> new AccountNotFoundException("Source account not found"));
-        Account destinationAccount = accountRepository.findByAccountNumberForUpdate(request.getDestinationAccountNumber())
+        Account destinationAccount = accountRepository.findForUpdateByAccountNumber(request.getDestinationAccountNumber())
                 .orElseThrow(() -> new AccountNotFoundException("Destination account not found"));
 
         Double amount = request.getAmount();

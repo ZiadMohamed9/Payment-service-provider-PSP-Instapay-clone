@@ -15,6 +15,7 @@ import java.util.Optional;
 
 @Repository
 public interface AccountRepository extends JpaRepository<Account, Long> {
+    @Lock(LockModeType.PESSIMISTIC_READ)
     Optional<Account> findByAccountNumber(String accountNumber);
 
     Optional<Account> findByUserAndAccountNumber(User user, String accountNumber);
@@ -25,11 +26,15 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 
     List<Account> findAllByUserAndBank(User user, Bank bank);
 
+    boolean existsByAccountNumber(String accountNumber);
+
     boolean existsByUserAndAccountNumber(User user, String accountNumber);
 
     boolean existsByUserAndId(User user, Long id);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT a FROM Account a WHERE a.accountNumber = :accountNumber")
-    Optional<Account> findByAccountNumberForUpdate(@Param("accountNumber") String accountNumber);
+    Optional<Account> findForUpdateByAccountNumber(String accountNumber);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<Account> findForUpdateByUserAndAccountNumber(User user, String accountNumber);
 }

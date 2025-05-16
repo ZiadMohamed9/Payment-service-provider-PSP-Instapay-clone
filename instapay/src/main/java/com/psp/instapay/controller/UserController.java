@@ -34,49 +34,25 @@ public class UserController {
 
     @GetMapping("/{username}")
     public ResponseEntity<ApiResponse> getUserByUsername(@PathVariable String username) {
-        try {
-            UserDTO user = userService.getUserByUsername(username);
-            return ResponseEntity.ok(
-                    ApiResponse.builder()
-                            .status(HttpStatus.OK)
-                            .message("Success!")
-                            .data(user)
-                            .build()
-            );
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse.builder()
-                            .status(HttpStatus.NOT_FOUND)
-                            .message("User not found")
-                            .build());
-        }
+        UserDTO user = userService.getUserByUsername(username);
+        return ResponseEntity.ok(
+                ApiResponse.builder()
+                        .status(HttpStatus.OK)
+                        .message("Success!")
+                        .data(user)
+                        .build()
+        );
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping("/update_role")
     public ResponseEntity<ApiResponse> updateUserRole(@Valid @RequestBody UpdateRoleRequest request) {
-        try {
-            return ResponseEntity.ok(
-                    ApiResponse.builder()
-                            .status(HttpStatus.OK)
-                            .message("User role updated successfully!")
-                            .data(userService.updateUserRole(request.getUsername(), request.getRole()))
-                            .build()
-            );
-        } catch (UserNotFoundException e) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(ApiResponse.builder()
-                            .status(HttpStatus.NOT_FOUND)
-                            .message("Error updating user role")
-                            .build());
-        } catch (InvalidRoleException e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.builder()
-                            .status(HttpStatus.BAD_REQUEST)
-                            .message("Invalid role provided")
-                            .build());
-        }
+        return ResponseEntity.ok(
+                ApiResponse.builder()
+                        .status(HttpStatus.OK)
+                        .message("User role updated successfully!")
+                        .data(userService.updateUserRole(request.getUsername(), request.getRole()))
+                        .build()
+        );
     }
 }

@@ -1,7 +1,7 @@
 package com.psp.instapay.controller;
 
 import com.psp.instapay.model.service.AccountService;
-import com.psp.instapay.model.dto.request.AddAccountRequest;
+import com.psp.instapay.model.dto.request.GetAccountsRequest;
 import com.psp.instapay.model.dto.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,85 +17,45 @@ public class AccountController {
 
     @GetMapping("/")
     public ResponseEntity<ApiResponse> getAllAccounts() {
-        try {
-            return ResponseEntity.ok(
-                    ApiResponse.builder()
-                            .status(HttpStatus.OK)
-                            .message("Accounts retrieved successfully")
-                            .data(accountService.getAllAccounts())
-                            .build()
-            );
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(
-                            ApiResponse.builder()
-                                    .status(HttpStatus.NOT_FOUND)
-                                    .message("Error retrieving accounts: " + e.getMessage())
-                                    .build()
-                    );
-        }
+        return ResponseEntity.ok(
+                ApiResponse.builder()
+                        .status(HttpStatus.OK)
+                        .message("Accounts retrieved successfully")
+                        .data(accountService.getAllAccounts())
+                        .build()
+        );
     }
 
     @GetMapping("/{bankName}")
     public ResponseEntity<ApiResponse> getAccountsByBankName(@PathVariable String bankName) {
-        try {
-            return ResponseEntity.ok(
-                    ApiResponse.builder()
-                            .status(HttpStatus.OK)
-                            .message("Accounts retrieved successfully")
-                            .data(accountService.getAllAccountsByBankName(bankName))
-                            .build()
-            );
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(
-                            ApiResponse.builder()
-                                    .status(HttpStatus.NOT_FOUND)
-                                    .message("Error retrieving accounts: " + e.getMessage())
-                                    .build()
-                    );
-        }
+        return ResponseEntity.ok(
+                ApiResponse.builder()
+                        .status(HttpStatus.OK)
+                        .message("Accounts retrieved successfully")
+                        .data(accountService.getAllAccountsByBankName(bankName))
+                        .build()
+        );
     }
 
     @PostMapping("/")
-    public ResponseEntity<ApiResponse> addAccount(@Valid @RequestBody AddAccountRequest addAccountRequest) {
-        try {
-            return ResponseEntity.ok(
-                    ApiResponse.builder()
-                            .status(HttpStatus.OK)
-                            .message("Account created successfully")
-                            .data(accountService.addAccount(addAccountRequest))
-                            .build()
-            );
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(
-                            ApiResponse.builder()
-                                    .status(HttpStatus.NOT_FOUND)
-                                    .message("Error adding account: " + e.getMessage())
-                                    .build()
-                    );
-        }
+    public ResponseEntity<ApiResponse> addAccountsByCard(@Valid @RequestBody GetAccountsRequest getAccountsRequest) {
+        return ResponseEntity.ok(
+                ApiResponse.builder()
+                        .status(HttpStatus.OK)
+                        .message("Account created successfully")
+                        .data(accountService.addAccounts(getAccountsRequest))
+                        .build()
+        );
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse> deleteAccount(@PathVariable Long id) {
-        try {
-            accountService.deleteAccount(id);
-            return ResponseEntity.ok(
-                    ApiResponse.builder()
-                            .status(HttpStatus.OK)
-                            .message("Account deleted successfully")
-                            .build()
-            );
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(
-                            ApiResponse.builder()
-                                    .status(HttpStatus.NOT_FOUND)
-                                    .message("Error deleting account: " + e.getMessage())
-                                    .build()
-                    );
-        }
+        accountService.deleteAccount(id);
+        return ResponseEntity.ok(
+                ApiResponse.builder()
+                        .status(HttpStatus.OK)
+                        .message("Account deleted successfully")
+                        .build()
+        );
     }
 }

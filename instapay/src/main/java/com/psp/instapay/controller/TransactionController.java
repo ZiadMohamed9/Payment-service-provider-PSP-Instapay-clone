@@ -19,23 +19,12 @@ public class TransactionController {
 
     @PostMapping("/send")
     public ResponseEntity<ApiResponse> sendMoney(@RequestBody SendMoneyRequest request) {
-        try {
-            return ResponseEntity.ok(
-                    ApiResponse.builder()
-                            .status(HttpStatus.OK)
-                            .data(transactionService.sendMoney(request))
-                            .message("Transaction successful")
-                            .build()
-            );
-        }
-        catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(
-                            ApiResponse.builder()
-                                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                    .message("Transaction failed: " + e.getMessage())
-                                    .build()
-                    );
-        }
+        return ResponseEntity.ok(
+                ApiResponse.builder()
+                        .status(HttpStatus.OK)
+                        .data(transactionService.sendMoney(request))
+                        .message("Transaction successful")
+                        .build()
+        );
     }
 }
