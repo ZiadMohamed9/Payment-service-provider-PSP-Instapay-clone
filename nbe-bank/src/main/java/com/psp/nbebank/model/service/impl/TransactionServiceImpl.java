@@ -3,6 +3,7 @@ package com.psp.nbebank.model.service.impl;
 
 import com.psp.nbebank.common.exception.AccountNotFoundException;
 import com.psp.nbebank.common.exception.TransactionException;
+import com.psp.nbebank.common.util.EncryptionUtil;
 import com.psp.nbebank.model.dto.request.BankRequest;
 import com.psp.nbebank.model.dto.response.TransactionResponse;
 import com.psp.nbebank.model.entity.Account;
@@ -24,23 +25,24 @@ import org.springframework.transaction.annotation.Transactional;
 public class TransactionServiceImpl implements TransactionService {
     private final TransactionRepository transactionRepository;
     private final AccountRepository accountRepository;
+    private final EncryptionUtil encryptionUtil;
 
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE, rollbackFor = Exception.class)
     public TransactionResponse prepareTransaction(BankRequest request) {
-        log.info("Initiating transaction for account: {}", request.getAccountNumber());
+        log.info("Initiating transaction for account: {}", encryptionUtil.decrypt(request.getAccountNumber()));
         Transaction transaction = initiateTransaction(request);
-        log.info("Transaction initiated successfully: {}", transaction);
+        log.info("Transaction initiated successfully: {}", transaction.getId());
 
         try {
             transaction.setStatus(TransactionStatus.PREPARED);
             transactionRepository.save(transaction);
-            log.info("Transaction prepared successfully: {}", transaction);
+            log.info("Transaction prepared successfully: {}", transaction.getId());
         } catch (Exception e) {
             log.error("Error preparing transaction: {}", e.getMessage());
             transaction.setStatus(TransactionStatus.FAILED);
             transactionRepository.save(transaction);
-            log.info("In preparation Transaction marked as failed: {}", transaction);
+            log.info("In preparation Transaction marked as failed: {}", transaction.getId());
 
             throw new RuntimeException(e);
         }
@@ -163,19 +165,25 @@ public class TransactionServiceImpl implements TransactionService {
     private boolean checkBalance(Account account, Double amount) {
         return account.getBalance() >= amount;
     }
-    
+
     private Transaction initiateTransaction(BankRequest request) {
         validateRequest(request);
 
-        Account account = accountRepository.findForUpdateByAccountNumber(request.getAccountNumber())
+        String decryptedAccountNumber = encryptionUtil.decrypt(request.getAccountNumber());
+
+        Account account = accountRepository.findForUpdateByAccountNumber(decryptedAccountNumber)
                 .orElseThrow(() -> new AccountNotFoundException("Account not found"));
 
-        return Transaction.builder()
+        Transaction transaction = Transaction.builder()
                 .Account(account)
                 .amount(request.getAmount())
                 .transactionType(request.getType())
                 .status(TransactionStatus.INITIATED)
                 .build();
+
+        transactionRepository.save(transaction);
+
+        return transaction;
     }
     
     private void validateRequest(BankRequest request) {

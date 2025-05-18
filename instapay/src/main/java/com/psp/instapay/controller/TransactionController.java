@@ -3,6 +3,7 @@ package com.psp.instapay.controller;
 import com.psp.instapay.model.dto.request.SendMoneyRequest;
 import com.psp.instapay.model.dto.response.ApiResponse;
 import com.psp.instapay.model.service.TransactionService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,7 @@ public class TransactionController {
     private final TransactionService transactionService;
 
     @PostMapping("/send")
-    public ResponseEntity<ApiResponse> sendMoney(@RequestBody SendMoneyRequest request) {
+    public ResponseEntity<ApiResponse> sendMoney(@Valid @RequestBody SendMoneyRequest request) {
         return ResponseEntity.ok(
                 ApiResponse.builder()
                         .status(HttpStatus.OK)

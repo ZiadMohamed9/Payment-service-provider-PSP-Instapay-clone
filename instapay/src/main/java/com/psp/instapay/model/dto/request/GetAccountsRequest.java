@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class GetAccountsRequest {
+    String phoneNumber;
+
     @NotNull(message = "Bank is required")
     String bankName;
 

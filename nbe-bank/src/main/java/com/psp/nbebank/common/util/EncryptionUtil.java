@@ -13,6 +13,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.regex.Pattern;
 
 @Component
 public class EncryptionUtil {
@@ -24,6 +25,9 @@ public class EncryptionUtil {
     private static final int GCM_TAG_LENGTH = 16;
     private static final String ALGORITHM = "AES/GCM/NoPadding";
     private final SecureRandom secureRandom = new SecureRandom();
+
+    // Pattern to validate phone numbers (simple pattern for demonstration)
+    private static final Pattern PHONE_NUMBER_PATTERN = Pattern.compile("^\\+?[0-9]{10,15}$");
 
     /**
      * Encrypts the given text using AES-GCM encryption algorithm.
@@ -116,5 +120,36 @@ public class EncryptionUtil {
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("Error creating secret key", e);
         }
+    }
+
+    /**
+     * Encrypts a phone number using AES-GCM encryption algorithm.
+     * Validates that the input is a valid phone number before encryption.
+     *
+     * @param phoneNumber the phone number to encrypt
+     * @return the encrypted phone number encoded as Base64 string
+     * @throws IllegalArgumentException if the phone number format is invalid
+     */
+    public String encryptPhoneNumber(String phoneNumber) {
+        if (phoneNumber == null || !PHONE_NUMBER_PATTERN.matcher(phoneNumber).matches()) {
+            throw new IllegalArgumentException("Invalid phone number format");
+        }
+        return encrypt(phoneNumber);
+    }
+
+    /**
+     * Decrypts an encrypted phone number.
+     * Validates that the decrypted result is a valid phone number.
+     *
+     * @param encryptedPhoneNumber the encrypted phone number encoded as Base64 string
+     * @return the decrypted phone number
+     * @throws IllegalArgumentException if the decrypted result is not a valid phone number
+     */
+    public String decryptPhoneNumber(String encryptedPhoneNumber) {
+        String decryptedPhoneNumber = decrypt(encryptedPhoneNumber);
+        if (!PHONE_NUMBER_PATTERN.matcher(decryptedPhoneNumber).matches()) {
+            throw new IllegalArgumentException("Decrypted value is not a valid phone number");
+        }
+        return decryptedPhoneNumber;
     }
 }

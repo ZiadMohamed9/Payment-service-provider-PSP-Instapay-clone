@@ -17,12 +17,12 @@ import java.util.List;
 @FeignClient(name = "nbe", url = "http://localhost:8070")
 public interface NBEClient extends BankClient {
     @Override
-    @GetMapping("/api/v1/accounts/{accountNumber}/balance")
-    Double getBalance(@PathVariable String accountNumber);
+    @PostMapping("/api/v1/accounts/balance")
+    Double getBalance(@RequestBody String accountNumber);
 
     @Override
     @PostMapping("/api/v1/accounts/")
-    List<GetAccountsResponse> getAccounts(@RequestBody GetAccountsRequest getAccountsRequest);
+    GetAccountsResponse getAccounts(@RequestBody GetAccountsRequest getAccountsRequest);
 
     @Override
     @GetMapping("/api/v1/users/phone/{phoneNumber}")

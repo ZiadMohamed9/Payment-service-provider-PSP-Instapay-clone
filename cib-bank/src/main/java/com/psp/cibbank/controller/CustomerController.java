@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.*;
 public class CustomerController {
     private final CustomerService customerService;
 
-    @GetMapping("/phone/{phoneNumber}")
-    public ResponseEntity<ApiResponse> getCustomerByPhoneNumber(@PathVariable String phoneNumber) {
+    @PostMapping("/phone")
+    public ResponseEntity<ApiResponse> getCustomerByPhoneNumber(@RequestBody String phoneNumber) {
         return ResponseEntity.ok(
                 ApiResponse.builder()
                         .status(HttpStatus.OK)

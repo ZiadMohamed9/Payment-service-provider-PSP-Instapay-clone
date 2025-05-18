@@ -1,5 +1,6 @@
 package com.psp.instapay.controller;
 
+import com.psp.instapay.model.dto.request.AccountDetailsRequest;
 import com.psp.instapay.model.service.AccountService;
 import com.psp.instapay.model.dto.request.GetAccountsRequest;
 import com.psp.instapay.model.dto.response.ApiResponse;
@@ -37,6 +38,17 @@ public class AccountController {
         );
     }
 
+    @PostMapping("/accdetails")
+    public ResponseEntity<ApiResponse> getAccountDetails(@Valid @RequestBody AccountDetailsRequest accountDetailsRequest) {
+        return ResponseEntity.ok(
+                ApiResponse.builder()
+                        .status(HttpStatus.OK)
+                        .message("Account details retrieved successfully")
+                        .data(accountService.getAccountByAccountNumber(accountDetailsRequest))
+                        .build()
+        );
+    }
+
     @PostMapping("/")
     public ResponseEntity<ApiResponse> addAccountsByCard(@Valid @RequestBody GetAccountsRequest getAccountsRequest) {
         return ResponseEntity.ok(
@@ -44,17 +56,6 @@ public class AccountController {
                         .status(HttpStatus.OK)
                         .message("Account created successfully")
                         .data(accountService.addAccounts(getAccountsRequest))
-                        .build()
-        );
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse> deleteAccount(@PathVariable Long id) {
-        accountService.deleteAccount(id);
-        return ResponseEntity.ok(
-                ApiResponse.builder()
-                        .status(HttpStatus.OK)
-                        .message("Account deleted successfully")
                         .build()
         );
     }

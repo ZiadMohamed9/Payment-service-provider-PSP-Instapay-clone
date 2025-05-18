@@ -12,17 +12,16 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.List;
 
 @FeignClient(name = "cib", url = "http://localhost:8090")
 public interface CIBClient extends BankClient {
     @Override
-    @GetMapping("/api/v1/accounts/{accountNumber}/balance")
-    Double getBalance(@PathVariable String accountNumber);
+    @PostMapping("/api/v1/accounts/balance")
+    Double getBalance(@RequestBody String accountNumber);
 
     @Override
     @PostMapping("/api/v1/accounts/")
-    List<GetAccountsResponse> getAccounts(@RequestBody GetAccountsRequest getAccountsRequest);
+    GetAccountsResponse getAccounts(@RequestBody GetAccountsRequest getAccountsRequest);
 
     @Override
     @GetMapping("/api/v1/users/phone/{phoneNumber}")

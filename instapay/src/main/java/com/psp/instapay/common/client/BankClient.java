@@ -11,7 +11,7 @@ import java.util.List;
 public interface BankClient {
     Double getBalance(String accountNumber);
 
-    List<GetAccountsResponse> getAccounts(GetAccountsRequest getAccountsRequest);
+    GetAccountsResponse getAccounts(GetAccountsRequest getAccountsRequest);
 
     ApiResponse findUserByPhoneNumber(String phoneNumber);
 

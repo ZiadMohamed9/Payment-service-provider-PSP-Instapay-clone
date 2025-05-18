@@ -5,11 +5,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+import java.util.Map;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class GetAccountsResponse {
-    private String accountNumber;
-    private Double balance;
+    private Map<String, Double> accounts;
 }

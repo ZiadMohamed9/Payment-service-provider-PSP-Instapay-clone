@@ -1,7 +1,5 @@
 package com.psp.instapay.controller;
 
-import com.psp.instapay.common.exception.AccountAlreadyExistsException;
-import com.psp.instapay.common.exception.UserNotFoundException;
 import com.psp.instapay.model.dto.response.ApiResponse;
 import com.psp.instapay.model.dto.request.LoginRequest;
 import com.psp.instapay.model.dto.request.SignUpRequest;

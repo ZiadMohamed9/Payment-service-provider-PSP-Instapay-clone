@@ -6,6 +6,7 @@ import com.psp.instapay.common.exception.AccountNotFoundException;
 import com.psp.instapay.common.exception.InsufficientBalanceException;
 import com.psp.instapay.common.exception.TransactionException;
 import com.psp.instapay.common.exception.UserNotFoundException;
+import com.psp.instapay.common.util.EncryptionUtil;
 import com.psp.instapay.model.dto.request.BankRequest;
 import com.psp.instapay.model.dto.request.SendMoneyRequest;
 import com.psp.instapay.model.dto.response.TransactionResponse;
@@ -36,6 +37,7 @@ public class TransactionServiceImpl implements TransactionService {
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
     private final BankClientFactory bankClientFactory;
+    private final EncryptionUtil encryptionUtil;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.SERIALIZABLE, rollbackFor = Exception.class)
@@ -55,13 +57,18 @@ public class TransactionServiceImpl implements TransactionService {
 
         // Step 2: Create bank requests for both source and destination accounts
         log.info("Creating bank requests for transaction: {}", transaction.getId());
+
+        // Encrypt the account numbers
+        String encryptedSourceAccountNumber = encryptionUtil.encrypt(request.getSourceAccountNumber());
+        String encryptedDestinationAccountNumber = encryptionUtil.encrypt(request.getDestinationAccountNumber());
+
         BankRequest sourceBankRequest = createBankRequest(
-                request.getSourceAccountNumber(),
+                encryptedSourceAccountNumber,
                 TransactionType.WITHDRAWAL,
                 request.getAmount());
 
         BankRequest destinationBankRequest = createBankRequest(
-                request.getDestinationAccountNumber(),
+                encryptedDestinationAccountNumber,
                 TransactionType.DEPOSIT,
                 request.getAmount());
         log.info("Bank requests created successfully for transaction: {}", transaction.getId());
@@ -183,7 +190,9 @@ public class TransactionServiceImpl implements TransactionService {
     private void updateAccountBalance(String accountNumber, BankClient bankClient) {
         Account account = accountRepository.findForUpdateByAccountNumber(accountNumber)
                 .orElseThrow(() -> new AccountNotFoundException("Account not found"));
-        Double newBalance = bankClient.getBalance(accountNumber);
+
+        String encryptedAccountNumber = encryptionUtil.encrypt(accountNumber);
+        Double newBalance = bankClient.getBalance(encryptedAccountNumber);
         account.setBalance(newBalance);
         accountRepository.save(account);
     }

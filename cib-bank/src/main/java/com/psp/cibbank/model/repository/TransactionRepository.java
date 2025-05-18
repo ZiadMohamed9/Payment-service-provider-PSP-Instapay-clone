@@ -11,11 +11,9 @@ import java.util.Optional;
 
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT t FROM Transaction t WHERE t.id = :id")
+
     Optional<Transaction> findForUpdateById(Long id);
 
-    @Lock(LockModeType.PESSIMISTIC_READ)
-    @Query("SELECT t FROM Transaction t WHERE t.id = :id")
-    Optional<Transaction> findById(Long id);
+    Optional<Transaction> findForShareById(Long id);
+
 }

@@ -8,5 +8,5 @@ import java.util.List;
 public interface AccountService {
     Double getBalance(String accountNumber);
 
-    List<GetAccountsResponse> getAccountsByCard(GetAccountsRequest getAccountsRequest);
+    GetAccountsResponse getAccountsByCard(GetAccountsRequest getAccountsRequest);
 }

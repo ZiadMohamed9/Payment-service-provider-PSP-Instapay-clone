@@ -41,6 +41,16 @@ public class GlobalExceptionHandler {
                         .build());
     }
 
+    @ExceptionHandler(CardNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseEntity<ApiResponse> handleCardNotFoundException(CardNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.builder()
+                        .status(HttpStatus.NOT_FOUND)
+                        .message(ex.getMessage())
+                        .build());
+    }
+
     @ExceptionHandler(AccountAlreadyExistsException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ResponseEntity<ApiResponse> handleAccountAlreadyExistsException(AccountAlreadyExistsException ex) {
@@ -94,6 +104,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseEntity<ApiResponse> handleUserNotFoundException(UserNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.builder()
+                        .status(HttpStatus.NOT_FOUND)
+                        .message(ex.getMessage())
+                        .build());
+    }
+
+    @ExceptionHandler(CustomerNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseEntity<ApiResponse> handleCustomerNotFoundException(CustomerNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ApiResponse.builder()
                         .status(HttpStatus.NOT_FOUND)

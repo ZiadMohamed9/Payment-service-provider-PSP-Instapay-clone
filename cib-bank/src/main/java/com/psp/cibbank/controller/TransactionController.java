@@ -3,7 +3,6 @@ package com.psp.cibbank.controller;
 import com.psp.cibbank.model.dto.request.BankRequest;
 import com.psp.cibbank.model.dto.response.ApiResponse;
 import com.psp.cibbank.model.dto.response.TransactionResponse;
-import com.psp.cibbank.model.enums.TransactionStatus;
 import com.psp.cibbank.model.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
