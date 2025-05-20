@@ -1,6 +1,6 @@
-package com.psp.cibbank.model.dto.request;
+package com.psp.instapay.model.dto.request;
 
-import com.psp.cibbank.model.enums.TransactionType;
+import com.psp.instapay.model.enums.TransactionType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class BankRequest {
+public class TransactionRequest {
     private String accountNumber;
     private TransactionType type;
     private Double amount;

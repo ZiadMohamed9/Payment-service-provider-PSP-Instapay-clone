@@ -3,10 +3,9 @@ package com.psp.nbebank.controller;
 import com.psp.nbebank.model.dto.request.GetAccountsRequest;
 import com.psp.nbebank.model.dto.response.GetAccountsResponse;
 import com.psp.nbebank.model.service.AccountService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,7 +19,7 @@ public class AccountController {
     }
 
     @PostMapping("/")
-    public List<GetAccountsResponse> getAccounts(@RequestBody GetAccountsRequest getAccountsRequest) {
+    public GetAccountsResponse getAccounts(@Valid @RequestBody GetAccountsRequest getAccountsRequest) {
         return accountService.getAccountsByCard(getAccountsRequest);
     }
 }

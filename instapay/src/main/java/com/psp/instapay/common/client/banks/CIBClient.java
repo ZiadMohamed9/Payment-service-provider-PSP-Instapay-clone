@@ -1,7 +1,7 @@
 package com.psp.instapay.common.client.banks;
 
 import com.psp.instapay.common.client.BankClient;
-import com.psp.instapay.model.dto.request.BankRequest;
+import com.psp.instapay.model.dto.request.TransactionRequest;
 import com.psp.instapay.model.dto.request.GetAccountsRequest;
 import com.psp.instapay.model.dto.response.ApiResponse;
 import com.psp.instapay.model.dto.response.GetAccountsResponse;
@@ -29,7 +29,7 @@ public interface CIBClient extends BankClient {
 
     @Override
     @PostMapping("/api/v1/transactions/prepare")
-    TransactionResponse prepareTransaction(@RequestBody BankRequest request);
+    TransactionResponse prepareTransaction(@RequestBody TransactionRequest request);
 
     @Override
     @PostMapping("/api/v1/transactions/commit")

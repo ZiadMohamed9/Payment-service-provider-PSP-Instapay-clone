@@ -1,5 +1,6 @@
-package com.psp.instapay.model.dto.request;
+package com.psp.cibbank.model.dto.request;
 
+import com.psp.cibbank.model.enums.TransactionType;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
@@ -13,16 +14,14 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class SendMoneyRequest {
-    @NotNull(message = "Source account number is required")
-    @Size(min = 16, max = 16, message = "Card number must be 16 digits")
-    private String sourceAccountNumber;
-
-    @NotNull(message = "Destination account number is required")
-    @Size(min = 16, max = 16, message = "Card number must be 16 digits")
-    private String destinationAccountNumber;
+public class TransactionRequest {
+    @NotNull(message = "Account number is required")
+    private String accountNumber;
 
     @NotNull(message = "Transaction type is required")
+    private TransactionType type;
+
+    @NotNull(message = "Amount is required")
     @DecimalMin(value = "1", message = "Amount must be greater than 0")
     @DecimalMax(value = "50000", message = "Amount must be less than or equal to 50000")
     private Double amount;

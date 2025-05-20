@@ -2,6 +2,7 @@ package com.psp.instapay.controller;
 
 import com.psp.instapay.common.exception.*;
 import com.psp.instapay.model.dto.response.ApiResponse;
+import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.dao.DataAccessException;
@@ -25,11 +26,22 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+    @ExceptionHandler(FeignException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ApiResponse> handleFeignException(FeignException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.builder()
+                        .status(HttpStatus.BAD_REQUEST)
+                        .message("External service error: " + ex.request().httpMethod() + " " + ex.request().url())
+                        .data(ex.contentUTF8())
+                        .build());
+    }
 
     @ExceptionHandler(AccountNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)

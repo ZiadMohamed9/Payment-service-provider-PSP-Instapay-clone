@@ -18,10 +18,8 @@ public class GetAccountsRequest {
     String bankName;
 
     @NotNull(message = "Account number is required")
-    @Size(min = 16, max = 16, message = "Card number must be 16 digits")
     String cardNumber;
 
     @NotNull(message = "PIN is required")
-    @Size(min = 4, max = 4, message = "PIN must be 4 digits")
     String pin;
 }

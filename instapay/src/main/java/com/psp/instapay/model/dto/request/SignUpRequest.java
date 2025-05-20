@@ -19,6 +19,7 @@ public class SignUpRequest {
     private String username;
 
     @NotNull(message = "Phone number is required")
+    @Size(min = 11, max = 11, message = "Phone number should be 11 digits")
     private String phoneNumber;
 
     @NotNull(message = "Password is required")

@@ -16,7 +16,6 @@ import com.psp.cibbank.common.exception.AccountNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -32,13 +31,13 @@ public class AccountServiceImpl implements AccountService {
     private final EncryptionUtil encryptionUtil;
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.REPEATABLE_READ)
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public Double getBalance(String accountNumber) {
         // Decrypt the account number
         String decryptedAccountNumber = encryptionUtil.decrypt(accountNumber);
 
         // Fetch the account using the decrypted account number
-        Account account = accountRepository.findByAccountNumber(decryptedAccountNumber)
+        Account account = accountRepository.findForShareByAccountNumber(decryptedAccountNumber)
                 .orElseThrow(() -> new AccountNotFoundException("Account not found"));
 
         // Return the balance of the account
@@ -46,7 +45,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.REPEATABLE_READ)
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public GetAccountsResponse getAccountsByCard(GetAccountsRequest getAccountsRequest) {
         // Decrypt the card number, PIN, and phone number
         String cardNumber = encryptionUtil.decrypt(getAccountsRequest.getCardNumber());
@@ -60,7 +59,7 @@ public class AccountServiceImpl implements AccountService {
                 .orElseThrow(() -> new CardNotFoundException("Card not found"));
 
         // Fetch accounts associated with the card
-        List<Account> accounts = accountRepository.findByCard(card);
+        List<Account> accounts = accountRepository.findForShareByCard(card);
         if (accounts == null || accounts.isEmpty()) {
             throw new AccountNotFoundException("No accounts found for the given card");
         }
