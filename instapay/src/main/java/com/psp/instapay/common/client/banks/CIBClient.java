@@ -1,6 +1,7 @@
 package com.psp.instapay.common.client.banks;
 
 import com.psp.instapay.common.client.BankClient;
+import com.psp.instapay.common.client.config.CibClientConfig;
 import com.psp.instapay.model.dto.request.TransactionRequest;
 import com.psp.instapay.model.dto.request.GetAccountsRequest;
 import com.psp.instapay.model.dto.response.ApiResponse;
@@ -12,8 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-
-@FeignClient(name = "cib", url = "http://localhost:8090")
+@FeignClient(name = "cib", url = "http://localhost:8090", configuration = CibClientConfig.class)
 public interface CIBClient extends BankClient {
     @Override
     @PostMapping("/api/v1/accounts/balance")

@@ -33,3 +33,11 @@ jwt:
 # Encryption Configuration
 encryption:
   key: ${ENCRYPTION_KEY}
+
+cib:
+  api:
+    key: ${CIB_API_KEY}
+
+nbe:
+  api:
+    key: ${NBE_API_KEY}
