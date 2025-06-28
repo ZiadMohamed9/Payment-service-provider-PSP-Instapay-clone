@@ -34,6 +34,7 @@ jwt:
 encryption:
   key: ${ENCRYPTION_KEY}
 
+# Security Configuration
 cib:
   api:
     key: ${CIB_API_KEY}
@@ -41,3 +42,14 @@ cib:
 nbe:
   api:
     key: ${NBE_API_KEY}
+
+# Swagger Configuration
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+  info:
+    title: Instapay API
+    description: API documentation for Instapay application
+    version: 1.0.0
