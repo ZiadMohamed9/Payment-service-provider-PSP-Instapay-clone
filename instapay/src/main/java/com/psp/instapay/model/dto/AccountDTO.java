@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AccountDTO {
     private String accountNumber;
-    private BankDTO bank;
+    private String bankName;
     private Double balance;
 }
