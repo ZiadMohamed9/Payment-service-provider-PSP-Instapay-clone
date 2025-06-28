@@ -124,6 +124,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    @Transactional
     public List<TransactionDTO> getAccountTransactionHistory(AccountDetailsRequest accountDetailsRequest) {
         User user = getUser();
         String accountNumber = accountDetailsRequest.getAccountNumber();
