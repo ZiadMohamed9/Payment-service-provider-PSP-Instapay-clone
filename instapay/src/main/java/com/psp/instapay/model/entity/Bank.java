@@ -18,11 +18,7 @@ public class Bank {
     @Column(nullable = false)
     private String name;
 
-    @Column(name = "service_url", nullable = false)
-    private String serviceUrl;
-
-    public Bank(String name, String serviceUrl) {
+    public Bank(String name) {
         this.name = name;
-        this.serviceUrl = serviceUrl;
     }
 } 
