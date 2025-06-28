@@ -27,9 +27,9 @@ server:
 
 # JWT Configuration
 jwt:
-  secret: 400e3f4b5c6d7e8f9a0b1c2d3e4f5g6h7i8j9k0l1m2n3o4p5q6r7s8t9u0v1w2x3y4z56
+  secret: ${JWT_KEY}
   expiration: 3600 # in seconds
 
 # Encryption Configuration
 encryption:
-  key: 1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p
+  key: ${ENCRYPTION_KEY}

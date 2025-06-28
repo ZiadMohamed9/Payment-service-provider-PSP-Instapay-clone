@@ -18,4 +18,8 @@ server:
 
 # Encryption Configuration
 encryption:
-  key: 1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p
+  key: ${ENCRYPTION_KEY}
+
+api:
+  security:
+    key: ${API_KEY}
