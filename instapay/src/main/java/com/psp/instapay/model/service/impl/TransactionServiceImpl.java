@@ -6,7 +6,9 @@ import com.psp.instapay.common.exception.AccountNotFoundException;
 import com.psp.instapay.common.exception.InsufficientBalanceException;
 import com.psp.instapay.common.exception.TransactionException;
 import com.psp.instapay.common.exception.UserNotFoundException;
+import com.psp.instapay.common.mapper.TransactionMapper;
 import com.psp.instapay.common.util.EncryptionUtil;
+import com.psp.instapay.model.dto.TransactionDTO;
 import com.psp.instapay.model.dto.request.TransactionRequest;
 import com.psp.instapay.model.dto.request.SendMoneyRequest;
 import com.psp.instapay.model.dto.response.TransactionResponse;
@@ -27,6 +29,8 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +41,7 @@ public class TransactionServiceImpl implements TransactionService {
     private final UserRepository userRepository;
     private final BankClientFactory bankClientFactory;
     private final EncryptionUtil encryptionUtil;
+    private final TransactionMapper transactionMapper;
 
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE, noRollbackFor = Exception.class)
@@ -202,6 +207,30 @@ public class TransactionServiceImpl implements TransactionService {
 
             throw e;
         }
+    }
+
+    @Override
+    public List<TransactionDTO> getTransactionHistory() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        List<Transaction> transactions = new ArrayList<>();
+        for (Account account : user.getAccounts()) {
+            List<Transaction> accountTransactions = transactionRepository.findAllByFromAccountOrToAccount(account, account);
+            transactions.addAll(accountTransactions);
+        }
+
+        if (transactions.isEmpty()) {
+            log.info("No transactions found for user: {}", username);
+            return List.of();
+        }
+
+        log.info("Transaction history retrieved successfully for user: {}", username);
+
+        return transactions.stream()
+                .map(transactionMapper::toTransactionDTO)
+                .toList();
     }
 
     private void updateAccountBalance(String accountNumber, BankClient bankClient) {

@@ -28,4 +28,15 @@ public class TransactionController {
                         .build()
         );
     }
+
+    @PostMapping("/history")
+    public ResponseEntity<ApiResponse> getTransactionHistory() {
+        return ResponseEntity.ok(
+                ApiResponse.builder()
+                        .status(HttpStatus.OK)
+                        .data(transactionService.getTransactionHistory())
+                        .message("Transaction history retrieved successfully")
+                        .build()
+        );
+    }
 }

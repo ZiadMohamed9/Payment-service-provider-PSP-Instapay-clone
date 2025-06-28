@@ -59,4 +59,15 @@ public class AccountController {
                         .build()
         );
     }
+
+    @PostMapping("/transactions/history")
+    public ResponseEntity<ApiResponse> getTransactionHistory(@Valid @RequestBody AccountDetailsRequest accountDetailsRequest) {
+        return ResponseEntity.ok(
+                ApiResponse.builder()
+                        .status(HttpStatus.OK)
+                        .message("Transaction history retrieved successfully")
+                        .data(accountService.getAccountTransactionHistory(accountDetailsRequest))
+                        .build()
+        );
+    }
 }

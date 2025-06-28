@@ -1,6 +1,7 @@
 package com.psp.instapay.model.service;
 
 import com.psp.instapay.model.dto.AccountDTO;
+import com.psp.instapay.model.dto.TransactionDTO;
 import com.psp.instapay.model.dto.request.AccountDetailsRequest;
 import com.psp.instapay.model.dto.request.GetAccountsRequest;
 
@@ -14,6 +15,8 @@ public interface AccountService {
     List<AccountDTO> getAllAccountsByBankName(String bankName);
 
     List<AccountDTO> addAccounts(GetAccountsRequest addAccountRequest);
+
+    List<TransactionDTO> getAccountTransactionHistory(AccountDetailsRequest accountNumber);
 
     void deleteAccount(String accountNumber);
 }

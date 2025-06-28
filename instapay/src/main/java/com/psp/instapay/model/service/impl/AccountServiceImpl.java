@@ -1,7 +1,9 @@
 package com.psp.instapay.model.service.impl;
 
 import com.psp.instapay.common.exception.*;
+import com.psp.instapay.common.mapper.TransactionMapper;
 import com.psp.instapay.model.dto.AccountDTO;
+import com.psp.instapay.model.dto.TransactionDTO;
 import com.psp.instapay.model.dto.request.AccountDetailsRequest;
 import com.psp.instapay.model.dto.request.GetAccountsRequest;
 import com.psp.instapay.model.dto.response.GetAccountsResponse;
@@ -10,6 +12,7 @@ import com.psp.instapay.model.entity.Bank;
 import com.psp.instapay.model.entity.User;
 import com.psp.instapay.model.repository.AccountRepository;
 import com.psp.instapay.model.repository.BankRepository;
+import com.psp.instapay.model.repository.TransactionRepository;
 import com.psp.instapay.model.repository.UserRepository;
 import com.psp.instapay.model.service.AccountService;
 import com.psp.instapay.common.client.BankClientFactory;
@@ -33,15 +36,15 @@ public class AccountServiceImpl implements AccountService {
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
     private final BankRepository bankRepository;
+    private final TransactionRepository transactionRepository;
     private final AccountMapper accountMapper;
+    private final TransactionMapper transactionMapper;
     private final BankClientFactory bankClientFactory;
     private final EncryptionUtil encryptionUtil;
 
     @Override
     public AccountDTO getAccountByAccountNumber(AccountDetailsRequest accountDetailsRequest) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = userRepository.findByUsername(authentication.getName())
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        User user = getUser();
 
         String accountNumber = accountDetailsRequest.getAccountNumber();
 
@@ -50,11 +53,10 @@ public class AccountServiceImpl implements AccountService {
                 .orElseThrow(() -> new AccountNotFoundException("Account not found"));
     }
 
+
     @Override
     public List<AccountDTO> getAllAccounts() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = userRepository.findByUsername(authentication.getName())
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        User user = getUser();
 
         return accountRepository.findAllByUser(user)
                 .stream()
@@ -64,9 +66,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public List<AccountDTO> getAllAccountsByBankName(String bankName) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = userRepository.findByUsername(authentication.getName())
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        User user = getUser();
 
         Bank bank = bankRepository.findByName(bankName.toUpperCase())
                 .orElseThrow(() -> new BankNotFoundException("Bank not found"));
@@ -79,9 +79,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public List<AccountDTO> addAccounts(GetAccountsRequest getAccountsRequest) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = userRepository.findByUsername(authentication.getName())
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        User user = getUser();
 
         String bankName = getAccountsRequest.getBankName().toUpperCase();
         Bank bank = bankRepository.findByName(bankName)
@@ -126,16 +124,34 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public List<TransactionDTO> getAccountTransactionHistory(AccountDetailsRequest accountDetailsRequest) {
+        User user = getUser();
+        String accountNumber = accountDetailsRequest.getAccountNumber();
+
+        Account account = accountRepository.findByUserAndAccountNumber(user, accountNumber)
+                .orElseThrow(() -> new AccountNotFoundException("Account not found"));
+
+        return transactionRepository.findAllByFromAccountOrToAccount(account, account)
+                .stream()
+                .map(transactionMapper::toTransactionDTO)
+                .toList();
+    }
+
+    @Override
     @Transactional
     public void deleteAccount(String accountNumber) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = userRepository.findByUsername(authentication.getName())
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        User user = getUser();
 
         if (accountRepository.existsByUserAndAccountNumber(user, accountNumber)) {
             accountRepository.deleteByAccountNumber(accountNumber);
         } else {
             throw new AccountNotFoundException("Account not found");
         }
+    }
+
+    private User getUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
     }
 }

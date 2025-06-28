@@ -14,5 +14,5 @@ import java.util.Optional;
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
     @Lock(LockModeType.PESSIMISTIC_READ)
-    List<Transaction> findAllByToAccount(Account toAccount);
+    List<Transaction> findAllByFromAccountOrToAccount(Account fromAccount, Account toAccount);
 }

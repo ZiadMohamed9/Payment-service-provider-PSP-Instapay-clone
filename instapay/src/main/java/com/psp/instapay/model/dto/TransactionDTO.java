@@ -8,7 +8,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -16,12 +15,11 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TransactionDTO {
-    private Long id;
     private Account fromAccount;
     private Account toAccount;
     private Bank fromBank;
     private Bank toBank;
-    private BigDecimal amount;
+    private Double amount;
     private TransactionStatus status;
     private LocalDateTime transactionDate;
 }

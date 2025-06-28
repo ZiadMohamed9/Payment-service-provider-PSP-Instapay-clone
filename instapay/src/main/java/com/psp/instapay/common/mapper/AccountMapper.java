@@ -8,8 +8,4 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface AccountMapper {
     AccountDTO toAccountDTO(Account account);
-
-    Account toAccount(GetAccountsRequest addAccountRequest);
-
-    Account toAccount(AccountDTO accountDTO);
 }
