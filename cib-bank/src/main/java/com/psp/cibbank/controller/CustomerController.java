@@ -7,12 +7,22 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * REST controller for managing customer-related operations.
+ * Provides endpoints to retrieve customer information.
+ */
 @RestController
 @RequestMapping("/api/v1/customers")
 @RequiredArgsConstructor
 public class CustomerController {
     private final CustomerService customerService;
 
+    /**
+     * Retrieves customer information based on the provided phone number.
+     *
+     * @param phoneNumber the phone number of the customer to look up
+     * @return a ResponseEntity containing an ApiResponse with the customer existence status
+     */
     @PostMapping("/phone")
     public ResponseEntity<ApiResponse> getCustomerByPhoneNumber(@RequestBody String phoneNumber) {
         return ResponseEntity.ok(

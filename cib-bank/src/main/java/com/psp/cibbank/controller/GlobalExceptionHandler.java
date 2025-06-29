@@ -16,6 +16,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Utility class for encryption and decryption using AES-GCM algorithm.
+ * Provides methods to encrypt and decrypt text and phone numbers securely.
+ */
 @ControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(AccountNotFoundException.class)

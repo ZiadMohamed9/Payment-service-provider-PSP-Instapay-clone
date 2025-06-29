@@ -15,6 +15,10 @@ import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.regex.Pattern;
 
+/**
+ * Utility class for encryption and decryption using AES-GCM algorithm.
+ * Provides methods to encrypt and decrypt text and phone numbers securely.
+ */
 @Component
 public class EncryptionUtil {
 
