@@ -41,7 +41,7 @@ All bank services respond to commands from the **Instapay orchestrator**, which 
 
 ---
 
-## Mock Banks Architecture
+## 🏦 Mock Banks Architecture
 
 ```
 ├─ xxx-bank
@@ -111,7 +111,7 @@ All bank services respond to commands from the **Instapay orchestrator**, which 
 
 ---
 
-## Instapay Architecture
+## 🔐 Instapay Architecture
 
 ```
 ├─ instapay
