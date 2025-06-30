@@ -1,6 +1,5 @@
 package com.psp.nbebank.model.service.impl;
 
-
 import com.psp.nbebank.common.exception.AccountNotFoundException;
 import com.psp.nbebank.common.exception.TransactionException;
 import com.psp.nbebank.common.util.EncryptionUtil;
@@ -19,6 +18,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Implementation of the TransactionService interface.
+ * Provides methods to prepare, commit, and rollback transactions.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -27,6 +30,13 @@ public class TransactionServiceImpl implements TransactionService {
     private final AccountRepository accountRepository;
     private final EncryptionUtil encryptionUtil;
 
+    /**
+     * Prepares a transaction based on the provided request.
+     * Logs the process and updates the transaction status to PREPARED.
+     *
+     * @param request the request object containing transaction details
+     * @return a TransactionResponse object containing the prepared transaction details
+     */
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public TransactionResponse prepareTransaction(TransactionRequest request) {
@@ -39,9 +49,9 @@ public class TransactionServiceImpl implements TransactionService {
             log.info("Transaction initiated successfully: {}", transaction.getId());
         } catch (Exception e) {
             log.error("Error initiating transaction: {}", e.getMessage());
-            throw new TransactionException("Transaction initiation failed: " + e.getMessage());
-        }
 
+            throw e;
+        }
 
         String message;
         try {
@@ -67,6 +77,13 @@ public class TransactionServiceImpl implements TransactionService {
         return buildResponse(transaction.getId(), transaction.getStatus(), message);
     }
 
+    /**
+     * Commits a transaction based on the provided transaction ID.
+     * Updates the account balance and marks the transaction as COMMITTED.
+     *
+     * @param transactionId the unique identifier of the transaction to be committed
+     * @return a TransactionResponse object containing the committed transaction details
+     */
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public TransactionResponse commitTransaction(Long transactionId) {
@@ -75,7 +92,6 @@ public class TransactionServiceImpl implements TransactionService {
         Transaction transaction = getTransactionById(transactionId);
 
         log.info("Transaction fetched successfully for commiting: {}", transaction);
-
 
         String message;
         try {
@@ -89,13 +105,11 @@ public class TransactionServiceImpl implements TransactionService {
             transaction.setStatus(TransactionStatus.COMMITTING);
             transactionRepository.save(transaction);
 
-
             log.info("Updating account balance for transaction: {}", transaction);
 
             updateAccountBalance(transaction);
 
             log.info("Account balance updated successfully for transaction: {}", transaction);
-
 
             log.info("Marking transaction as committed: {}", transaction);
 
@@ -119,6 +133,13 @@ public class TransactionServiceImpl implements TransactionService {
         return buildResponse(transaction.getId(), transaction.getStatus(), message);
     }
 
+    /**
+     * Rolls back a transaction based on the provided transaction ID.
+     * Updates the account balance and marks the transaction as ROLLED_BACK.
+     *
+     * @param transactionId the unique identifier of the transaction to be rolled back
+     * @return a TransactionResponse object containing the rolled-back transaction details
+     */
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public TransactionResponse rollbackTransaction(Long transactionId) {
@@ -127,7 +148,6 @@ public class TransactionServiceImpl implements TransactionService {
         Transaction transaction = getTransactionById(transactionId);
 
         log.info("Transaction fetched successfully for rollback: {}", transaction);
-
 
         String message;
         try {
@@ -151,13 +171,11 @@ public class TransactionServiceImpl implements TransactionService {
             transaction.setStatus(TransactionStatus.ROLLING_BACK);
             transactionRepository.save(transaction);
 
-
             log.info("Updating account balance for rollback transaction: {}", transaction);
 
             updateAccountBalance(transaction);
 
             log.info("Account balance updated successfully for rollback transaction: {}", transaction);
-
 
             log.info("Marking transaction as rolled back: {}", transaction);
 
@@ -181,11 +199,24 @@ public class TransactionServiceImpl implements TransactionService {
         return buildResponse(transaction.getId(), transaction.getStatus(), message);
     }
 
-    public Transaction getTransactionById(Long transactionId) {
+    /**
+     * Retrieves a transaction by its ID.
+     *
+     * @param transactionId the unique identifier of the transaction
+     * @return the Transaction object
+     * @throws TransactionException if the transaction is not found
+     */
+    private Transaction getTransactionById(Long transactionId) {
         return transactionRepository.findForUpdateById(transactionId)
                 .orElseThrow(() -> new TransactionException("Transaction not found"));
     }
 
+    /**
+     * Updates the account balance based on the transaction details.
+     *
+     * @param transaction the transaction object containing account and amount details
+     * @throws AccountNotFoundException if the account is not found
+     */
     private void updateAccountBalance(Transaction transaction) {
         String accountNumber = transaction.getAccount().getAccountNumber();
         Account account = accountRepository.findForUpdateByAccountNumber(accountNumber)
@@ -214,10 +245,24 @@ public class TransactionServiceImpl implements TransactionService {
         accountRepository.save(account);
     }
 
+    /**
+     * Checks if the account has sufficient balance for the transaction.
+     *
+     * @param account the account object
+     * @param amount the transaction amount
+     * @return true if the account has sufficient balance, false otherwise
+     */
     private boolean checkBalance(Account account, Double amount) {
         return account.getBalance() >= amount;
     }
 
+    /**
+     * Initiates a transaction based on the provided request.
+     *
+     * @param request the request object containing transaction details
+     * @return the initiated Transaction object
+     * @throws AccountNotFoundException if the account is not found
+     */
     private Transaction initiateTransaction(TransactionRequest request) {
         String decryptedAccountNumber = encryptionUtil.decrypt(request.getAccountNumber());
 
@@ -236,6 +281,14 @@ public class TransactionServiceImpl implements TransactionService {
         return transaction;
     }
 
+    /**
+     * Builds a TransactionResponse object based on the provided details.
+     *
+     * @param transactionId the unique identifier of the transaction
+     * @param status the status of the transaction
+     * @param message the message describing the transaction status
+     * @return a TransactionResponse object
+     */
     private TransactionResponse buildResponse(Long transactionId, TransactionStatus status, String message) {
         return TransactionResponse.builder()
                 .transactionId(transactionId)
