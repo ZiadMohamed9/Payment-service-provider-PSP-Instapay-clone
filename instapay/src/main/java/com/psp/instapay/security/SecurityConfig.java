@@ -18,6 +18,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/**
+ * Security configuration class for the application.
+ * Configures authentication, authorization, and security filters.
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -26,39 +30,63 @@ public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
     private final UserService userService;
 
+    /**
+     * Configures the security filter chain for HTTP requests.
+     *
+     * @param http The HttpSecurity object to configure.
+     * @return The configured SecurityFilterChain.
+     * @throws Exception If an error occurs during configuration.
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(AbstractHttpConfigurer::disable) // Disables CSRF protection.
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html")
-                        .permitAll()
+                        .permitAll() // Allows public access to specified endpoints.
                         .anyRequest()
-                        .authenticated()
+                        .authenticated() // Requires authentication for all other requests.
                 )
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Configures stateless session management.
                 )
-                .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .authenticationProvider(authenticationProvider()) // Sets the custom authentication provider.
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class); // Adds the JWT authentication filter.
         return http.build();
     }
 
+    /**
+     * Configures the DAO-based authentication provider.
+     *
+     * @return The configured DaoAuthenticationProvider.
+     */
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userService);
-        authProvider.setPasswordEncoder(passwordEncoder());
+        authProvider.setUserDetailsService(userService); // Sets the custom user service for authentication.
+        authProvider.setPasswordEncoder(passwordEncoder()); // Sets the password encoder.
         return authProvider;
     }
 
+    /**
+     * Configures the password encoder.
+     *
+     * @return The PasswordEncoder instance.
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return new BCryptPasswordEncoder(); // Uses BCrypt for password encoding.
     }
 
+    /**
+     * Configures the authentication manager.
+     *
+     * @param config The AuthenticationConfiguration object.
+     * @return The configured AuthenticationManager.
+     * @throws Exception If an error occurs during configuration.
+     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
+        return config.getAuthenticationManager(); // Retrieves the authentication manager from the configuration.
     }
 }

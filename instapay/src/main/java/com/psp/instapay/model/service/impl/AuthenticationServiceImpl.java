@@ -17,6 +17,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+/**
+ * Implementation of the AuthenticationService interface.
+ * Provides methods for user registration and login, including token generation and validation.
+ */
 @Service
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
@@ -26,6 +30,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
 
+    /**
+     * Registers a new user in the system.
+     *
+     * @param request The sign-up request containing user details such as username, password, and phone number.
+     * @return An AuthenticationResponse containing the generated JWT token for the registered user.
+     * @throws AccountAlreadyExistsException If the username or phone number already exists in the system.
+     */
     @Override
     public AuthenticationResponse register(SignUpRequest request) {
         if (isUsernameOrPhoneAlreadyExists(request.getUsername(), request.getPhoneNumber())) {
@@ -41,6 +52,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return new AuthenticationResponse(token);
     }
 
+    /**
+     * Authenticates a user and generates a JWT token.
+     *
+     * @param request The login request containing the username and password.
+     * @return An AuthenticationResponse containing the generated JWT token for the authenticated user.
+     * @throws UsernameNotFoundException If the username is not found in the system.
+     */
     @Override
     public AuthenticationResponse login(LoginRequest request) {
         authenticationManager.authenticate(
@@ -56,6 +74,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return new AuthenticationResponse(token);
     }
 
+    /**
+     * Checks if a username or phone number already exists in the system.
+     *
+     * @param email The username to check.
+     * @param phoneNumber The phone number to check.
+     * @return True if the username or phone number already exists, false otherwise.
+     */
     private boolean isUsernameOrPhoneAlreadyExists(String email, String phoneNumber) {
         return userRepository.existsByUsername(email) || userRepository.existsByPhoneNumber(phoneNumber);
     }

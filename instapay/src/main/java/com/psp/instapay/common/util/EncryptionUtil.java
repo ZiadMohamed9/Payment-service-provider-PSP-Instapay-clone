@@ -15,16 +15,20 @@ import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.regex.Pattern;
 
+/**
+ * Utility class for encryption and decryption using AES-GCM algorithm.
+ * Provides methods to encrypt and decrypt text and phone numbers securely.
+ */
 @Component
 public class EncryptionUtil {
 
     @Value("${encryption.key}")
     private String encryptionKey;
 
-    private static final int GCM_IV_LENGTH = 12;
-    private static final int GCM_TAG_LENGTH = 16;
-    private static final String ALGORITHM = "AES/GCM/NoPadding";
-    private final SecureRandom secureRandom = new SecureRandom();
+    private static final int GCM_IV_LENGTH = 12; // Length of the Initialization Vector (IV) in bytes
+    private static final int GCM_TAG_LENGTH = 16; // Length of the authentication tag in bytes
+    private static final String ALGORITHM = "AES/GCM/NoPadding"; // AES-GCM encryption algorithm
+    private final SecureRandom secureRandom = new SecureRandom(); // Secure random number generator
 
     // Pattern to validate phone numbers (simple pattern for demonstration)
     private static final Pattern PHONE_NUMBER_PATTERN = Pattern.compile("^\\+?[0-9]{10,15}$");
@@ -38,29 +42,20 @@ public class EncryptionUtil {
      */
     public String encrypt(String text) {
         try {
-            // Generate a secure random IV (Initialization Vector)
             byte[] iv = new byte[GCM_IV_LENGTH];
             secureRandom.nextBytes(iv);
 
-            // Create GCM parameter specification
             GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH * 8, iv);
-
-            // Get a secure key
             SecretKey secretKey = getSecretKey();
 
-            // Initialize cipher for encryption
             Cipher cipher = Cipher.getInstance(ALGORITHM);
             cipher.init(Cipher.ENCRYPT_MODE, secretKey, gcmParameterSpec);
 
-            // Encrypt the text
             byte[] encryptedBytes = cipher.doFinal(text.getBytes(StandardCharsets.UTF_8));
-
-            // Combine IV and encrypted data
             ByteBuffer byteBuffer = ByteBuffer.allocate(iv.length + encryptedBytes.length);
             byteBuffer.put(iv);
             byteBuffer.put(encryptedBytes);
 
-            // Encode as a Base64 string
             return Base64.getEncoder().encodeToString(byteBuffer.array());
         } catch (Exception e) {
             throw new RuntimeException("Error encrypting data", e);
@@ -75,10 +70,8 @@ public class EncryptionUtil {
      */
     public String decrypt(String encryptedText) {
         try {
-            // Decode the Base64 string
             byte[] encryptedData = Base64.getDecoder().decode(encryptedText);
 
-            // Extract IV and ciphertext
             ByteBuffer byteBuffer = ByteBuffer.wrap(encryptedData);
             byte[] iv = new byte[GCM_IV_LENGTH];
             byteBuffer.get(iv);
@@ -86,17 +79,12 @@ public class EncryptionUtil {
             byte[] ciphertext = new byte[byteBuffer.remaining()];
             byteBuffer.get(ciphertext);
 
-            // Create GCM parameter specification
             GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH * 8, iv);
-
-            // Get the secret key
             SecretKey secretKey = getSecretKey();
 
-            // Initialize cipher for decryption
             Cipher cipher = Cipher.getInstance(ALGORITHM);
             cipher.init(Cipher.DECRYPT_MODE, secretKey, gcmParameterSpec);
 
-            // Decrypt the data
             byte[] decryptedBytes = cipher.doFinal(ciphertext);
 
             return new String(decryptedBytes, StandardCharsets.UTF_8);
@@ -113,7 +101,6 @@ public class EncryptionUtil {
      */
     private SecretKey getSecretKey() {
         try {
-            // Use SHA-256 to create a secure key from the encryption key string
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] keyBytes = digest.digest(encryptionKey.getBytes(StandardCharsets.UTF_8));
             return new SecretKeySpec(keyBytes, "AES");

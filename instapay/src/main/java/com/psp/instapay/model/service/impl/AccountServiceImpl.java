@@ -29,6 +29,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Implementation of the AccountService interface.
+ * Provides methods for managing accounts, including retrieval, addition, deletion, and transaction history.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -42,6 +46,13 @@ public class AccountServiceImpl implements AccountService {
     private final BankClientFactory bankClientFactory;
     private final EncryptionUtil encryptionUtil;
 
+    /**
+     * Retrieves account details by account number for the authenticated user.
+     *
+     * @param accountDetailsRequest The request containing the account number.
+     * @return The account details as an AccountDTO.
+     * @throws AccountNotFoundException If the account is not found.
+     */
     @Override
     public AccountDTO getAccountByAccountNumber(AccountDetailsRequest accountDetailsRequest) {
         User user = getUser();
@@ -53,7 +64,11 @@ public class AccountServiceImpl implements AccountService {
                 .orElseThrow(() -> new AccountNotFoundException("Account not found"));
     }
 
-
+    /**
+     * Retrieves all accounts associated with the authenticated user.
+     *
+     * @return A list of all accounts as AccountDTOs.
+     */
     @Override
     public List<AccountDTO> getAllAccounts() {
         User user = getUser();
@@ -64,6 +79,13 @@ public class AccountServiceImpl implements AccountService {
                 .toList();
     }
 
+    /**
+     * Retrieves all accounts associated with a specific bank name for the authenticated user.
+     *
+     * @param bankName The name of the bank.
+     * @return A list of accounts associated with the specified bank as AccountDTOs.
+     * @throws BankNotFoundException If the bank is not found.
+     */
     @Override
     public List<AccountDTO> getAllAccountsByBankName(String bankName) {
         User user = getUser();
@@ -77,6 +99,14 @@ public class AccountServiceImpl implements AccountService {
                 .toList();
     }
 
+    /**
+     * Adds multiple accounts to the system for the authenticated user.
+     *
+     * @param getAccountsRequest The request containing the account details to be added.
+     * @return A list of the added accounts as AccountDTOs.
+     * @throws BankNotFoundException If the bank is not found.
+     * @throws CardNotFoundException If the card number or PIN is invalid.
+     */
     @Override
     public List<AccountDTO> addAccounts(GetAccountsRequest getAccountsRequest) {
         User user = getUser();
@@ -95,7 +125,6 @@ public class AccountServiceImpl implements AccountService {
 
         GetAccountsResponse accountsResponse = bankClientFactory.getBankClient(bankName)
                 .getAccounts(encryptedRequest);
-
 
         Map<String, Double> accounts = accountsResponse.getAccounts();
 
@@ -123,6 +152,13 @@ public class AccountServiceImpl implements AccountService {
         return accountDTOs;
     }
 
+    /**
+     * Retrieves the transaction history for a specific account of the authenticated user.
+     *
+     * @param accountDetailsRequest The request containing the account number.
+     * @return A list of transactions associated with the account as TransactionDTOs.
+     * @throws AccountNotFoundException If the account is not found.
+     */
     @Override
     @Transactional
     public List<TransactionDTO> getAccountTransactionHistory(AccountDetailsRequest accountDetailsRequest) {
@@ -138,6 +174,12 @@ public class AccountServiceImpl implements AccountService {
                 .toList();
     }
 
+    /**
+     * Deletes an account by its account number for the authenticated user.
+     *
+     * @param accountNumber The account number of the account to be deleted.
+     * @throws AccountNotFoundException If the account is not found.
+     */
     @Override
     @Transactional
     public void deleteAccount(String accountNumber) {
@@ -150,6 +192,12 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
+    /**
+     * Retrieves the currently authenticated user.
+     *
+     * @return The authenticated user as a User entity.
+     * @throws UserNotFoundException If the user is not found.
+     */
     private User getUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return userRepository.findByUsername(authentication.getName())

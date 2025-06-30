@@ -15,12 +15,23 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * Implementation of the UserService interface.
+ * Provides methods for managing user-related operations, such as retrieving user details and updating roles.
+ */
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
+    /**
+     * Retrieves a user by their unique ID.
+     *
+     * @param id The ID of the user to retrieve.
+     * @return The user details as a UserDTO.
+     * @throws UserNotFoundException If the user is not found with the given ID.
+     */
     @Override
     public UserDTO getUserById(Long id) {
         return userRepository.findById(id)
@@ -28,6 +39,13 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
     }
 
+    /**
+     * Retrieves a user by their phone number.
+     *
+     * @param phoneNumber The phone number of the user to retrieve.
+     * @return The user details as a UserDTO.
+     * @throws UserNotFoundException If the user is not found with the given phone number.
+     */
     @Override
     public UserDTO getUserByPhoneNumber(String phoneNumber) {
         return userRepository.findByPhoneNumber(phoneNumber)
@@ -35,6 +53,13 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new UserNotFoundException("User not found with phone number: " + phoneNumber));
     }
 
+    /**
+     * Retrieves a user by their username.
+     *
+     * @param username The username of the user to retrieve.
+     * @return The user details as a UserDTO.
+     * @throws UserNotFoundException If the user is not found with the given username.
+     */
     @Override
     public UserDTO getUserByUsername(String username) {
         return userRepository.findByUsername(username)
@@ -42,6 +67,11 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
     }
 
+    /**
+     * Retrieves all users in the system.
+     *
+     * @return A list of all users as UserDTOs.
+     */
     @Override
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll()
@@ -50,6 +80,15 @@ public class UserServiceImpl implements UserService {
                 .toList();
     }
 
+    /**
+     * Updates the role of a user identified by their username.
+     *
+     * @param username The username of the user whose role is to be updated.
+     * @param role The new role to assign to the user (e.g., USER or ADMIN).
+     * @return The updated user details as a UserDTO.
+     * @throws UserNotFoundException If the user is not found with the given username.
+     * @throws InvalidRoleException If the provided role is invalid.
+     */
     @Override
     public UserDTO updateUserRole(String username, String role) {
         User user = userRepository.findByUsername(username)
@@ -64,6 +103,13 @@ public class UserServiceImpl implements UserService {
         return userMapper.toUserDTO(user);
     }
 
+    /**
+     * Loads a user by their username for authentication purposes.
+     *
+     * @param username The username of the user to load.
+     * @return The user details as a UserDetails object.
+     * @throws UsernameNotFoundException If the user is not found with the given username.
+     */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return userRepository.findByUsername(username)

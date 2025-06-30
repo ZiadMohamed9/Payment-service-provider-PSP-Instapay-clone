@@ -13,12 +13,22 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * REST controller for managing authentication-related operations.
+ * Provides endpoints for user registration and login.
+ */
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
+    /**
+     * Registers a new user.
+     *
+     * @param request the SignUpRequest containing user registration details
+     * @return a ResponseEntity containing an ApiResponse with the registration status and user details
+     */
     @PostMapping("/register")
     public ResponseEntity<ApiResponse> register(@Valid @RequestBody SignUpRequest request) {
         return ResponseEntity
@@ -32,6 +42,12 @@ public class AuthenticationController {
                 );
     }
 
+    /**
+     * Authenticates a user and logs them in.
+     *
+     * @param request the LoginRequest containing user login credentials
+     * @return a ResponseEntity containing an ApiResponse with the login status and user details
+     */
     @PostMapping("/login")
     public ResponseEntity<ApiResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(

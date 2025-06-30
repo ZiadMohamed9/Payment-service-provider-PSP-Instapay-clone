@@ -29,6 +29,11 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Global exception handler for the application.
+ * Provides centralized exception handling for various types of exceptions
+ * and returns appropriate HTTP responses with error details.
+ */
 @ControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(FeignException.class)

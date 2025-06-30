@@ -32,6 +32,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Implementation of the TransactionService interface.
+ * Provides methods for managing transactions, including sending money and retrieving transaction history.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -43,6 +47,14 @@ public class TransactionServiceImpl implements TransactionService {
     private final EncryptionUtil encryptionUtil;
     private final TransactionMapper transactionMapper;
 
+    /**
+     * Sends money from one account to another.
+     * Handles transaction preparation, commitment, and rollback in case of failure.
+     *
+     * @param request The request containing details of the transaction, such as source and destination accounts and the amount.
+     * @return A TransactionResponse containing the status and details of the completed transaction.
+     * @throws RuntimeException If any error occurs during the transaction process.
+     */
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE, noRollbackFor = Exception.class)
     public TransactionResponse sendMoney(SendMoneyRequest request) {
@@ -209,6 +221,12 @@ public class TransactionServiceImpl implements TransactionService {
         }
     }
 
+    /**
+     * Retrieves the transaction history for the authenticated user.
+     *
+     * @return A list of transactions as TransactionDTOs.
+     * @throws UserNotFoundException If the authenticated user is not found.
+     */
     @Override
     @Transactional
     public List<TransactionDTO> getTransactionHistory() {
@@ -234,6 +252,13 @@ public class TransactionServiceImpl implements TransactionService {
                 .toList();
     }
 
+    /**
+     * Updates the account balance for a given account number.
+     *
+     * @param accountNumber The account number to update.
+     * @param bankClient The bank client to use for fetching the new balance.
+     * @throws AccountNotFoundException If the account is not found.
+     */
     private void updateAccountBalance(String accountNumber, BankClient bankClient) {
         Account account = accountRepository.findForUpdateByAccountNumber(accountNumber)
                 .orElseThrow(() -> new AccountNotFoundException("Account not found"));
@@ -244,6 +269,13 @@ public class TransactionServiceImpl implements TransactionService {
         accountRepository.save(account);
     }
 
+    /**
+     * Handles the rollback of a transaction by requesting the bank to roll back the transaction.
+     *
+     * @param bankClient The bank client to use for the rollback request.
+     * @param bankTransactionId The ID of the transaction to roll back.
+     * @throws TransactionException If the rollback request fails or the bank does not respond with a successful status.
+     */
     private void handleRollback(BankClient bankClient, Long bankTransactionId) {
         log.info("Rolling back transaction: {}", bankTransactionId);
 
@@ -266,22 +298,57 @@ public class TransactionServiceImpl implements TransactionService {
         }
     }
 
+    /**
+     * Requests a rollback from the bank for a given transaction ID.
+     *
+     * @param bankClient The bank client to use for the rollback request.
+     * @param transactionId The ID of the transaction to roll back.
+     * @return The status of the rollback request.
+     */
     private TransactionStatus requestRollback(BankClient bankClient, Long transactionId) {
         return bankClient.rollbackTransaction(transactionId).getStatus();
     }
 
+    /**
+     * Requests a commit from the bank for a given transaction ID.
+     *
+     * @param bankClient The bank client to use for the commit request.
+     * @param transactionId The ID of the transaction to commit.
+     * @return The status of the commit request.
+     */
     private TransactionStatus requestCommit(BankClient bankClient, Long transactionId) {
         return bankClient.commitTransaction(transactionId).getStatus();
     }
 
+    /**
+     * Requests preparation from the bank for a given transaction request.
+     *
+     * @param bankClient The bank client to use for the preparation request.
+     * @param request The transaction request containing account number, type, and amount.
+     * @return The response from the bank containing the transaction ID and status.
+     */
     private TransactionResponse requestPrepare(BankClient bankClient, TransactionRequest request) {
         return bankClient.prepareTransaction(request);
     }
 
+    /**
+     * Retrieves the bank client for a given bank name.
+     *
+     * @param bankName The name of the bank.
+     * @return The bank client for the specified bank.
+     */
     private BankClient getBankClient(String bankName) {
         return bankClientFactory.getBankClient(bankName);
     }
 
+    /**
+     * Creates a transaction request for the bank.
+     *
+     * @param accountNumber The account number associated with the transaction.
+     * @param type The type of transaction (e.g., withdrawal, deposit).
+     * @param amount The amount involved in the transaction.
+     * @return A TransactionRequest object containing the details of the transaction.
+     */
     private TransactionRequest createTransactionRequest(String accountNumber, TransactionType type, Double amount) {
         return TransactionRequest.builder()
                 .accountNumber(accountNumber)
@@ -290,6 +357,16 @@ public class TransactionServiceImpl implements TransactionService {
                 .build();
     }
 
+    /**
+     * Initiates a transaction by validating the request and retrieving the source and destination accounts.
+     *
+     * @param request The request containing details of the transaction, such as source and destination accounts and the amount.
+     * @return A Transaction object representing the initiated transaction.
+     * @throws UserNotFoundException If the authenticated user is not found.
+     * @throws AccountNotFoundException If either the source or destination account is not found.
+     * @throws InsufficientBalanceException If the source account does not have enough balance for the transaction.
+     * @throws TransactionException If the source and destination accounts are the same.
+     */
     private Transaction initiateTransaction(SendMoneyRequest request) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByUsername(username)

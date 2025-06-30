@@ -13,13 +13,22 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-
+/**
+ * REST controller for managing user-related operations.
+ * Provides endpoints for retrieving user details and updating user roles.
+ */
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
 
+    /**
+     * Retrieves all users.
+     * This endpoint is restricted to users with the 'ADMIN' authority.
+     *
+     * @return a ResponseEntity containing an ApiResponse with the list of all users
+     */
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/")
     public ResponseEntity<ApiResponse> getAllUsers() {
@@ -32,6 +41,12 @@ public class UserController {
         );
     }
 
+    /**
+     * Retrieves a user by their username.
+     *
+     * @param username the username of the user to retrieve
+     * @return a ResponseEntity containing an ApiResponse with the user details
+     */
     @GetMapping("/{username}")
     public ResponseEntity<ApiResponse> getUserByUsername(@PathVariable String username) {
         UserDTO user = userService.getUserByUsername(username);
@@ -44,6 +59,13 @@ public class UserController {
         );
     }
 
+    /**
+     * Updates the role of a user.
+     * This endpoint is restricted to users with the 'ADMIN' authority.
+     *
+     * @param request the UpdateRoleRequest containing the username and the new role
+     * @return a ResponseEntity containing an ApiResponse with the updated user details
+     */
     @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping("/update_role")
     public ResponseEntity<ApiResponse> updateUserRole(@Valid @RequestBody UpdateRoleRequest request) {

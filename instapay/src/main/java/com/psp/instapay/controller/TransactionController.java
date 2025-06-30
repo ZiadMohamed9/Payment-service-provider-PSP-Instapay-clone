@@ -12,12 +12,22 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * REST controller for managing transaction-related operations.
+ * Provides endpoints for sending money and retrieving transaction history.
+ */
 @RestController
 @RequestMapping("/api/transactions")
 @RequiredArgsConstructor
 public class TransactionController {
     private final TransactionService transactionService;
 
+    /**
+     * Sends money based on the provided request details.
+     *
+     * @param request the SendMoneyRequest containing transaction details
+     * @return a ResponseEntity containing an ApiResponse with the transaction status and details
+     */
     @PostMapping("/send")
     public ResponseEntity<ApiResponse> sendMoney(@Valid @RequestBody SendMoneyRequest request) {
         return ResponseEntity.ok(
@@ -29,6 +39,11 @@ public class TransactionController {
         );
     }
 
+    /**
+     * Retrieves the transaction history for the user.
+     *
+     * @return a ResponseEntity containing an ApiResponse with the transaction history
+     */
     @PostMapping("/history")
     public ResponseEntity<ApiResponse> getTransactionHistory() {
         return ResponseEntity.ok(

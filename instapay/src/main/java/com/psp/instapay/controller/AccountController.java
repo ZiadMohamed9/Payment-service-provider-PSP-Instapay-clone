@@ -10,12 +10,21 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * REST controller for managing account-related operations.
+ * Provides endpoints for retrieving, adding, and managing account details.
+ */
 @RestController
 @RequestMapping("/api/accounts")
 @RequiredArgsConstructor
 public class AccountController {
     private final AccountService accountService;
 
+    /**
+     * Retrieves all accounts.
+     *
+     * @return a ResponseEntity containing an ApiResponse with the list of all accounts
+     */
     @GetMapping("/")
     public ResponseEntity<ApiResponse> getAllAccounts() {
         return ResponseEntity.ok(
@@ -27,6 +36,12 @@ public class AccountController {
         );
     }
 
+    /**
+     * Retrieves accounts by the specified bank name.
+     *
+     * @param bankName the name of the bank
+     * @return a ResponseEntity containing an ApiResponse with the accounts for the specified bank
+     */
     @GetMapping("/{bankName}")
     public ResponseEntity<ApiResponse> getAccountsByBankName(@PathVariable String bankName) {
         return ResponseEntity.ok(
@@ -38,6 +53,12 @@ public class AccountController {
         );
     }
 
+    /**
+     * Retrieves account details based on the provided request.
+     *
+     * @param accountDetailsRequest the request containing account details
+     * @return a ResponseEntity containing an ApiResponse with the account details
+     */
     @PostMapping("/accdetails")
     public ResponseEntity<ApiResponse> getAccountDetails(@Valid @RequestBody AccountDetailsRequest accountDetailsRequest) {
         return ResponseEntity.ok(
@@ -49,6 +70,12 @@ public class AccountController {
         );
     }
 
+    /**
+     * Adds accounts based on the provided card details.
+     *
+     * @param getAccountsRequest the request containing card details for account creation
+     * @return a ResponseEntity containing an ApiResponse with the created account details
+     */
     @PostMapping("/")
     public ResponseEntity<ApiResponse> addAccountsByCard(@Valid @RequestBody GetAccountsRequest getAccountsRequest) {
         return ResponseEntity.ok(
@@ -60,6 +87,12 @@ public class AccountController {
         );
     }
 
+    /**
+     * Retrieves the transaction history for a specific account.
+     *
+     * @param accountDetailsRequest the request containing account details
+     * @return a ResponseEntity containing an ApiResponse with the transaction history
+     */
     @PostMapping("/transactions/history")
     public ResponseEntity<ApiResponse> getTransactionHistory(@Valid @RequestBody AccountDetailsRequest accountDetailsRequest) {
         return ResponseEntity.ok(
