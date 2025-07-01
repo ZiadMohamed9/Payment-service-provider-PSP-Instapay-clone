@@ -28,7 +28,7 @@ public class Account {
      * The user associated with the account.
      * Represents a many-to-one relationship with the User entity.
      */
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
@@ -36,7 +36,7 @@ public class Account {
      * The bank associated with the account.
      * Represents a many-to-one relationship with the Bank entity.
      */
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bank_id", nullable = false)
     private Bank bank;
 

@@ -75,7 +75,7 @@ public class User implements UserDetails {
      * The list of accounts associated with the user.
      * Represents a one-to-many relationship with the Account entity.
      */
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Account> accounts;
 
     /**
