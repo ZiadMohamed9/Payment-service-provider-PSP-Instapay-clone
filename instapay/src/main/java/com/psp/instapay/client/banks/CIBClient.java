@@ -1,7 +1,7 @@
-package com.psp.instapay.common.client.banks;
+package com.psp.instapay.client.banks;
 
-import com.psp.instapay.common.client.BankClient;
-import com.psp.instapay.common.client.config.CibClientConfig;
+import com.psp.instapay.client.BankClient;
+import com.psp.instapay.config.CibClientConfig;
 import com.psp.instapay.model.dto.request.TransactionRequest;
 import com.psp.instapay.model.dto.request.GetAccountsRequest;
 import com.psp.instapay.model.dto.response.ApiResponse;

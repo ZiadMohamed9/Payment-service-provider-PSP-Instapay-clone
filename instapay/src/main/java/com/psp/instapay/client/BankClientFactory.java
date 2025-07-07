@@ -1,7 +1,7 @@
-package com.psp.instapay.common.client;
+package com.psp.instapay.client;
 
-import com.psp.instapay.common.client.banks.CIBClient;
-import com.psp.instapay.common.client.banks.NBEClient;
+import com.psp.instapay.client.banks.CIBClient;
+import com.psp.instapay.client.banks.NBEClient;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;

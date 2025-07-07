@@ -1,4 +1,4 @@
-package com.psp.instapay.security.jwt;
+package com.psp.instapay.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

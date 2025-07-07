@@ -8,7 +8,7 @@ import com.psp.instapay.model.dto.response.AuthenticationResponse;
 import com.psp.instapay.model.entity.User;
 import com.psp.instapay.common.mapper.UserMapper;
 import com.psp.instapay.model.repository.UserRepository;
-import com.psp.instapay.security.jwt.JwtService;
+import com.psp.instapay.security.JwtService;
 import com.psp.instapay.model.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;

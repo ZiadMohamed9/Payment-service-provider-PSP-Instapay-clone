@@ -1,7 +1,7 @@
-package com.psp.instapay.security;
+package com.psp.instapay.config;
 
 import com.psp.instapay.model.service.UserService;
-import com.psp.instapay.security.jwt.JwtAuthFilter;
+import com.psp.instapay.security.JwtAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

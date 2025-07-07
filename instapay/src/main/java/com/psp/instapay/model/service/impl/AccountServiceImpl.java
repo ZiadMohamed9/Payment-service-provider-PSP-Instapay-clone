@@ -15,7 +15,7 @@ import com.psp.instapay.model.repository.BankRepository;
 import com.psp.instapay.model.repository.TransactionRepository;
 import com.psp.instapay.model.repository.UserRepository;
 import com.psp.instapay.model.service.AccountService;
-import com.psp.instapay.common.client.BankClientFactory;
+import com.psp.instapay.client.BankClientFactory;
 import com.psp.instapay.common.mapper.AccountMapper;
 import com.psp.instapay.common.util.EncryptionUtil;
 import lombok.RequiredArgsConstructor;

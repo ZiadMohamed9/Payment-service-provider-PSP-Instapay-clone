@@ -1,25 +1,25 @@
-package com.psp.instapay.common.client.config;
+package com.psp.instapay.config;
 
 import feign.RequestInterceptor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 
 /**
- * Configuration class for the NBE client.
+ * Configuration class for the CIB client.
  * Provides custom configurations such as request interceptors for Feign clients.
  */
-public class NbeClientConfig {
+public class CibClientConfig {
 
     /**
-     * The API key used for authenticating requests to the NBE API.
+     * The API key used for authenticating requests to the CIB API.
      * This value is injected from the application properties.
      */
-    @Value("${nbe.api.key}")
+    @Value("${cib.api.key}")
     private String apiKey;
 
     /**
      * Creates a Feign RequestInterceptor bean that adds the API key
-     * to the headers of every request made by the NBE client.
+     * to the headers of every request made by the CIB client.
      *
      * @return a RequestInterceptor that adds the "X-API-Key" header
      */

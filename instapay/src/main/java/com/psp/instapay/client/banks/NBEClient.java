@@ -1,18 +1,23 @@
-package com.psp.instapay.common.client;
+package com.psp.instapay.client.banks;
 
+import com.psp.instapay.client.BankClient;
+import com.psp.instapay.config.NbeClientConfig;
 import com.psp.instapay.model.dto.request.TransactionRequest;
 import com.psp.instapay.model.dto.request.GetAccountsRequest;
 import com.psp.instapay.model.dto.response.ApiResponse;
 import com.psp.instapay.model.dto.response.GetAccountsResponse;
 import com.psp.instapay.model.dto.response.TransactionResponse;
+import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 /**
- * Interface defining the contract for bank client operations.
- * Provides methods for interacting with bank APIs, such as retrieving account balances,
- * fetching account details, and managing transactions.
+ * Feign client interface for interacting with the NBE bank API.
+ * Extends the BankClient interface to provide specific implementations for NBE bank.
  */
-public interface BankClient {
+@FeignClient(name = "nbe", url = "http://localhost:8070", configuration = NbeClientConfig.class)
+public interface NBEClient extends BankClient {
 
     /**
      * Retrieves the balance of a specific account.
@@ -20,7 +25,9 @@ public interface BankClient {
      * @param accountNumber the account number to retrieve the balance for
      * @return the balance of the account as a Double
      */
-    Double getBalance(String accountNumber);
+    @Override
+    @PostMapping("/api/v1/accounts/balance")
+    Double getBalance(@RequestBody String accountNumber);
 
     /**
      * Retrieves the accounts associated with a specific request.
@@ -28,7 +35,9 @@ public interface BankClient {
      * @param getAccountsRequest the request containing account retrieval details
      * @return a GetAccountsResponse containing the account details
      */
-    GetAccountsResponse getAccounts(GetAccountsRequest getAccountsRequest);
+    @Override
+    @PostMapping("/api/v1/accounts/")
+    GetAccountsResponse getAccounts(@RequestBody GetAccountsRequest getAccountsRequest);
 
     /**
      * Retrieves customer details by their phone number.
@@ -36,7 +45,9 @@ public interface BankClient {
      * @param phoneNumber the phone number of the customer
      * @return a ResponseEntity containing an ApiResponse with the customer details
      */
-    ResponseEntity<ApiResponse> getCustomerByPhoneNumber(String phoneNumber);
+    @Override
+    @PostMapping("/api/v1/customers/phone")
+    ResponseEntity<ApiResponse> getCustomerByPhoneNumber(@RequestBody String phoneNumber);
 
     /**
      * Prepares a transaction based on the provided request.
@@ -44,7 +55,9 @@ public interface BankClient {
      * @param request the transaction request containing transaction details
      * @return a TransactionResponse containing the prepared transaction details
      */
-    TransactionResponse prepareTransaction(TransactionRequest request);
+    @Override
+    @PostMapping("/api/v1/transactions/prepare")
+    TransactionResponse prepareTransaction(@RequestBody TransactionRequest request);
 
     /**
      * Commits a transaction using its ID.
@@ -52,7 +65,9 @@ public interface BankClient {
      * @param transactionId the ID of the transaction to commit
      * @return a TransactionResponse containing the committed transaction details
      */
-    TransactionResponse commitTransaction(Long transactionId);
+    @Override
+    @PostMapping("/api/v1/transactions/commit")
+    TransactionResponse commitTransaction(@RequestBody Long transactionId);
 
     /**
      * Rolls back a transaction using its ID.
@@ -60,5 +75,7 @@ public interface BankClient {
      * @param transactionId the ID of the transaction to roll back
      * @return a TransactionResponse containing the rolled-back transaction details
      */
-    TransactionResponse rollbackTransaction(Long transactionId);
+    @Override
+    @PostMapping("/api/v1/transactions/rollback")
+    TransactionResponse rollbackTransaction(@RequestBody Long transactionId);
 }

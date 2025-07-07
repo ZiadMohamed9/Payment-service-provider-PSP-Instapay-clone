@@ -1,4 +1,4 @@
-package com.psp.instapay.security.jwt;
+package com.psp.instapay.security;
 
 import com.psp.instapay.model.service.UserService;
 import jakarta.servlet.FilterChain;

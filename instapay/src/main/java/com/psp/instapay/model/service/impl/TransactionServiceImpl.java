@@ -1,7 +1,7 @@
 package com.psp.instapay.model.service.impl;
 
-import com.psp.instapay.common.client.BankClient;
-import com.psp.instapay.common.client.BankClientFactory;
+import com.psp.instapay.client.BankClient;
+import com.psp.instapay.client.BankClientFactory;
 import com.psp.instapay.common.exception.AccountNotFoundException;
 import com.psp.instapay.common.exception.InsufficientBalanceException;
 import com.psp.instapay.common.exception.TransactionException;
