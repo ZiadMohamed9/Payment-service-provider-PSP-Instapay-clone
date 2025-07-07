@@ -44,69 +44,76 @@ All bank services respond to commands from the **Instapay orchestrator**, which 
 ## 🏦 Mock Banks Architecture
 
 ```
-├─ xxx-bank
-│  ├─ .gitattributes
-│  ├─ .gitignore
-│  ├─ pom.xml
-│  └─ src
-│     ├─ main
-│     │  ├─ java
-│     │  │  └─ com
-│     │  │     └─ psp
-│     │  │        └─ cibbank
-│     │  │           ├─ XxxBankApplication.java
-│     │  │           ├─ common
-│     │  │           │  ├─ exception
-│     │  │           │  │  ├─ AccountNotFoundException.java
-│     │  │           │  │  ├─ CardNotFoundException.java
-│     │  │           │  │  ├─ CustomerNotFoundException.java
-│     │  │           │  │  └─ TransactionException.java
-│     │  │           │  └─ util
-│     │  │           │     └─ EncryptionUtil.java
-│     │  │           ├─ controller
-│     │  │           │  ├─ AccountController.java
-│     │  │           │  ├─ CustomerController.java
-│     │  │           │  ├─ GlobalExceptionHandler.java
-│     │  │           │  └─ TransactionController.java
-│     │  │           ├─ model
-│     │  │           │  ├─ dto
-│     │  │           │  │  ├─ CustomerDTO.java
-│     │  │           │  │  ├─ request
-│     │  │           │  │  │  ├─ GetAccountsRequest.java
-│     │  │           │  │  │  └─ TransactionRequest.java
-│     │  │           │  │  └─ response
-│     │  │           │  │     ├─ ApiResponse.java
-│     │  │           │  │     ├─ GetAccountsResponse.java
-│     │  │           │  │     └─ TransactionResponse.java
-│     │  │           │  ├─ entity
-│     │  │           │  │  ├─ Account.java
-│     │  │           │  │  ├─ Card.java
-│     │  │           │  │  ├─ Customer.java
-│     │  │           │  │  └─ Transaction.java
-│     │  │           │  ├─ enums
-│     │  │           │  │  ├─ CardType.java
-│     │  │           │  │  ├─ TransactionStatus.java
-│     │  │           │  │  └─ TransactionType.java
-│     │  │           │  ├─ repository
-│     │  │           │  │  ├─ AccountRepository.java
-│     │  │           │  │  ├─ CardRepository.java
-│     │  │           │  │  ├─ CustomerRepository.java
-│     │  │           │  │  └─ TransactionRepository.java
-│     │  │           │  └─ service
-│     │  │           │     ├─ AccountService.java
-│     │  │           │     ├─ CustomerService.java
-│     │  │           │     ├─ TransactionService.java
-│     │  │           │     └─ impl
-│     │  │           │        ├─ AccountServiceImpl.java
-│     │  │           │        ├─ CustomerServiceImpl.java
-│     │  │           │        └─ TransactionServiceImpl.java
-│     │  │           └─ security
-│     │  │              ├─ ApiKeyAuthFilter.java
-│     │  │              ├─ ApiKeyAuthenticationToken.java
-│     │  │              └─ SecurityConfig.java
-│     │  └─ resources
-│     │     ├─ application.yml
-│     │     └─ banner.txt
+xxx-bank/
+├── .gitattributes
+├── .gitignore
+├── pom.xml
+└── src/
+    ├── main/
+    │   ├── java/
+    │   │   └── com/
+    │   │       └── psp/
+    │   │           └── cibbank/
+    │   │               ├── CibBankApplication.java
+    │   │               ├── common/
+    │   │               │   ├── exception/
+    │   │               │   │   ├── AccountNotFoundException.java
+    │   │               │   │   ├── CardNotFoundException.java
+    │   │               │   │   ├── CustomerNotFoundException.java
+    │   │               │   │   └── TransactionException.java
+    │   │               │   └── util/
+    │   │               │       └── EncryptionUtil.java
+    │   │               ├── controller/
+    │   │               │   ├── AccountController.java
+    │   │               │   ├── CustomerController.java
+    │   │               │   ├── GlobalExceptionHandler.java
+    │   │               │   └── TransactionController.java
+    │   │               ├── model/
+    │   │               │   ├── dto/
+    │   │               │   │   ├── CustomerDTO.java
+    │   │               │   │   ├── request/
+    │   │               │   │   │   ├── GetAccountsRequest.java
+    │   │               │   │   │   └── TransactionRequest.java
+    │   │               │   │   └── response/
+    │   │               │   │       ├── ApiResponse.java
+    │   │               │   │       ├── GetAccountsResponse.java
+    │   │               │   │       └── TransactionResponse.java
+    │   │               │   ├── entity/
+    │   │               │   │   ├── Account.java
+    │   │               │   │   ├── Card.java
+    │   │               │   │   ├── Customer.java
+    │   │               │   │   └── Transaction.java
+    │   │               │   ├── enums/
+    │   │               │   │   ├── CardType.java
+    │   │               │   │   ├── TransactionStatus.java
+    │   │               │   │   └── TransactionType.java
+    │   │               │   ├── repository/
+    │   │               │   │   ├── AccountRepository.java
+    │   │               │   │   ├── CardRepository.java
+    │   │               │   │   ├── CustomerRepository.java
+    │   │               │   │   └── TransactionRepository.java
+    │   │               │   └── service/
+    │   │               │       ├── AccountService.java
+    │   │               │       ├── CustomerService.java
+    │   │               │       ├── impl/
+    │   │               │       │   ├── AccountServiceImpl.java
+    │   │               │       │   ├── CustomerServiceImpl.java
+    │   │               │       │   └── TransactionServiceImpl.java
+    │   │               │       └── TransactionService.java
+    │   │               └── security/
+    │   │                   ├── ApiKeyAuthenticationToken.java
+    │   │                   ├── ApiKeyAuthFilter.java
+    │   │                   └── SecurityConfig.java
+    │   └── resources/
+    │       ├── application.yml
+    │       └── banner.txt
+    └── test/
+        └── java/
+            └── com/
+                └── psp/
+                    └── nbebank/
+                        └── CibBankApplicationTests.java
+
 ```
 
 ---
@@ -114,100 +121,106 @@ All bank services respond to commands from the **Instapay orchestrator**, which 
 ## 🔐 Instapay Architecture
 
 ```
-├─ instapay
-│  ├─ .gitattributes
-│  ├─ .gitignore
-│  ├─ pom.xml
-│  └─ src
-│     ├─ main
-│     │  ├─ java
-│     │  │  └─ com
-│     │  │     └─ psp
-│     │  │        └─ instapay
-│     │  │           ├─ InstapayApplication.java
-│     │  │           ├─ common
-│     │  │           │  ├─ client
-│     │  │           │  │  ├─ BankClient.java
-│     │  │           │  │  ├─ BankClientFactory.java
-│     │  │           │  │  ├─ banks
-│     │  │           │  │  │  ├─ CIBClient.java
-│     │  │           │  │  │  └─ NBEClient.java
-│     │  │           │  │  └─ config
-│     │  │           │  │     ├─ CibClientConfig.java
-│     │  │           │  │     └─ NbeClientConfig.java
-│     │  │           │  ├─ exception
-│     │  │           │  │  ├─ AccountAlreadyExistsException.java
-│     │  │           │  │  ├─ AccountNotFoundException.java
-│     │  │           │  │  ├─ BankNotFoundException.java
-│     │  │           │  │  ├─ CardNotFoundException.java
-│     │  │           │  │  ├─ CustomerNotFoundException.java
-│     │  │           │  │  ├─ InsufficientBalanceException.java
-│     │  │           │  │  ├─ InvalidRoleException.java
-│     │  │           │  │  ├─ TransactionException.java
-│     │  │           │  │  └─ UserNotFoundException.java
-│     │  │           │  ├─ mapper
-│     │  │           │  │  ├─ AccountMapper.java
-│     │  │           │  │  ├─ TransactionMapper.java
-│     │  │           │  │  └─ UserMapper.java
-│     │  │           │  └─ util
-│     │  │           │     └─ EncryptionUtil.java
-│     │  │           ├─ controller
-│     │  │           │  ├─ AccountController.java
-│     │  │           │  ├─ AuthenticationController.java
-│     │  │           │  ├─ GlobalExceptionHandler.java
-│     │  │           │  ├─ TransactionController.java
-│     │  │           │  └─ UserController.java
-│     │  │           ├─ model
-│     │  │           │  ├─ dto
-│     │  │           │  │  ├─ AccountDTO.java
-│     │  │           │  │  ├─ BankDTO.java
-│     │  │           │  │  ├─ TransactionDTO.java
-│     │  │           │  │  ├─ UserDTO.java
-│     │  │           │  │  ├─ request
-│     │  │           │  │  │  ├─ AccountDetailsRequest.java
-│     │  │           │  │  │  ├─ GetAccountsRequest.java
-│     │  │           │  │  │  ├─ LoginRequest.java
-│     │  │           │  │  │  ├─ SendMoneyRequest.java
-│     │  │           │  │  │  ├─ SignUpRequest.java
-│     │  │           │  │  │  ├─ TransactionRequest.java
-│     │  │           │  │  │  └─ UpdateRoleRequest.java
-│     │  │           │  │  └─ response
-│     │  │           │  │     ├─ ApiResponse.java
-│     │  │           │  │     ├─ AuthenticationResponse.java
-│     │  │           │  │     ├─ GetAccountsResponse.java
-│     │  │           │  │     └─ TransactionResponse.java
-│     │  │           │  ├─ entity
-│     │  │           │  │  ├─ Account.java
-│     │  │           │  │  ├─ Bank.java
-│     │  │           │  │  ├─ Transaction.java
-│     │  │           │  │  └─ User.java
-│     │  │           │  ├─ enums
-│     │  │           │  │  ├─ Role.java
-│     │  │           │  │  ├─ TransactionStatus.java
-│     │  │           │  │  └─ TransactionType.java
-│     │  │           │  ├─ repository
-│     │  │           │  │  ├─ AccountRepository.java
-│     │  │           │  │  ├─ BankRepository.java
-│     │  │           │  │  ├─ TransactionRepository.java
-│     │  │           │  │  └─ UserRepository.java
-│     │  │           │  └─ service
-│     │  │           │     ├─ AccountService.java
-│     │  │           │     ├─ AuthenticationService.java
-│     │  │           │     ├─ TransactionService.java
-│     │  │           │     ├─ UserService.java
-│     │  │           │     └─ impl
-│     │  │           │        ├─ AccountServiceImpl.java
-│     │  │           │        ├─ AuthenticationServiceImpl.java
-│     │  │           │        ├─ TransactionServiceImpl.java
-│     │  │           │        └─ UserServiceImpl.java
-│     │  │           └─ security
-│     │  │              ├─ SecurityConfig.java
-│     │  │              └─ jwt
-│     │  │                 ├─ JwtAuthFilter.java
-│     │  │                 └─ JwtService.java
-│     │  └─ resources
-│     │     ├─ application.yml
-│     │     └─ banner.txt
+instapay/
+├── .gitattributes
+├── .gitignore
+└── src/
+    ├── main/
+    │   ├── java/
+    │   │   └── com/
+    │   │       └── psp/
+    │   │           └── instapay/
+    │   │               ├── client/
+    │   │               │   ├── BankClient.java
+    │   │               │   ├── BankClientFactory.java
+    │   │               │   └── banks/
+    │   │               │       ├── CIBClient.java
+    │   │               │       └── NBEClient.java
+    │   │               ├── common/
+    │   │               │   ├── exception/
+    │   │               │   │   ├── AccountAlreadyExistsException.java
+    │   │               │   │   ├── AccountNotFoundException.java
+    │   │               │   │   ├── BankNotFoundException.java
+    │   │               │   │   ├── CardNotFoundException.java
+    │   │               │   │   ├── CustomerNotFoundException.java
+    │   │               │   │   ├── InsufficientBalanceException.java
+    │   │               │   │   ├── InvalidRoleException.java
+    │   │               │   │   ├── TransactionException.java
+    │   │               │   │   └── UserNotFoundException.java
+    │   │               │   ├── mapper/
+    │   │               │   │   ├── AccountMapper.java
+    │   │               │   │   ├── TransactionMapper.java
+    │   │               │   │   └── UserMapper.java
+    │   │               │   └── util/
+    │   │               │       └── EncryptionUtil.java
+    │   │               ├── config/
+    │   │               │   ├── CibClientConfig.java
+    │   │               │   ├── NbeClientConfig.java
+    │   │               │   ├── OpenApiConfig.java
+    │   │               │   └── SecurityConfig.java
+    │   │               ├── controller/
+    │   │               │   ├── AccountController.java
+    │   │               │   ├── AuthenticationController.java
+    │   │               │   ├── GlobalExceptionHandler.java
+    │   │               │   ├── TransactionController.java
+    │   │               │   └── UserController.java
+    │   │               ├── InstapayApplication.java
+    │   │               ├── model/
+    │   │               │   ├── dto/
+    │   │               │   │   ├── AccountDTO.java
+    │   │               │   │   ├── BankDTO.java
+    │   │               │   │   ├── request/
+    │   │               │   │   │   ├── AccountDetailsRequest.java
+    │   │               │   │   │   ├── GetAccountsRequest.java
+    │   │               │   │   │   ├── LoginRequest.java
+    │   │               │   │   │   ├── SendMoneyRequest.java
+    │   │               │   │   │   ├── SignUpRequest.java
+    │   │               │   │   │   ├── TransactionRequest.java
+    │   │               │   │   │   └── UpdateRoleRequest.java
+    │   │               │   │   ├── response/
+    │   │               │   │   │   ├── ApiResponse.java
+    │   │               │   │   │   ├── AuthenticationResponse.java
+    │   │               │   │   │   ├── GetAccountsResponse.java
+    │   │               │   │   │   └── TransactionResponse.java
+    │   │               │   │   ├── TransactionDTO.java
+    │   │               │   │   └── UserDTO.java
+    │   │               │   ├── entity/
+    │   │               │   │   ├── Account.java
+    │   │               │   │   ├── Bank.java
+    │   │               │   │   ├── Transaction.java
+    │   │               │   │   └── User.java
+    │   │               │   ├── enums/
+    │   │               │   │   ├── Role.java
+    │   │               │   │   ├── TransactionStatus.java
+    │   │               │   │   └── TransactionType.java
+    │   │               │   ├── repository/
+    │   │               │   │   ├── AccountRepository.java
+    │   │               │   │   ├── BankRepository.java
+    │   │               │   │   ├── TransactionRepository.java
+    │   │               │   │   └── UserRepository.java
+    │   │               │   └── service/
+    │   │               │       ├── AccountService.java
+    │   │               │       ├── AuthenticationService.java
+    │   │               │       ├── impl/
+    │   │               │       │   ├── AccountServiceImpl.java
+    │   │               │       │   ├── AuthenticationServiceImpl.java
+    │   │               │       │   ├── TransactionServiceImpl.java
+    │   │               │       │   └── UserServiceImpl.java
+    │   │               │       ├── TransactionService.java
+    │   │               │       └── UserService.java
+    │   │               └── security/
+    │   │                   ├── JwtAuthFilter.java
+    │   │                   └── JwtService.java
+    │   └── resources/
+    │       ├── application.yml
+    │       └── banner.txt
+    └── test/
+        └── java/
+            └── com/
+                └── psp/
+                    └── instapay/
+                        └── InstapayApplicationTests.java
+
 ```
 
 ---
