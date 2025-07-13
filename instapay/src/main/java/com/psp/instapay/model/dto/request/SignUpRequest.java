@@ -1,6 +1,8 @@
 package com.psp.instapay.model.dto.request;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,29 +23,29 @@ public class SignUpRequest {
      * The full name of the user signing up.
      * This field is required and cannot be null.
      */
-    @NotNull(message = "Name is required")
+    @NotBlank(message = "Name is required")
     private String name;
 
     /**
      * The username chosen by the user for the account.
      * This field is required and cannot be null.
      */
-    @NotNull(message = "Username is required")
+    @NotBlank(message = "Username is required")
     private String username;
 
     /**
      * The phone number of the user signing up.
      * Must be exactly 11 digits long and cannot be null.
      */
-    @NotNull(message = "Phone number is required")
-    @Size(min = 11, max = 11, message = "Phone number should be 11 digits")
+    @NotBlank(message = "Phone number is required")
+    @Pattern(regexp = "^\\d{11}$", message = "Phone number should be 11 digits")
     private String phoneNumber;
 
     /**
      * The password chosen by the user for the account.
      * Must be between 8 and 32 characters long and cannot be null.
      */
-    @NotNull(message = "Password is required")
+    @NotBlank(message = "Password is required")
     @Size(min = 8, max = 32, message = "Password size should be between 8 and 32 characters")
     private String password;
 }

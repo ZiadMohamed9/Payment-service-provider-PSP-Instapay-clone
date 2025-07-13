@@ -14,7 +14,7 @@ import org.springframework.http.HttpStatus;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ApiResponse {
+public class ResponseDto {
 
     /**
      * The HTTP status of the response.

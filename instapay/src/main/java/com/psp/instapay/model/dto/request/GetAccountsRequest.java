@@ -1,5 +1,6 @@
 package com.psp.instapay.model.dto.request;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -27,14 +28,14 @@ public class GetAccountsRequest {
      * The name of the bank associated with the account.
      * Cannot be null and must be provided in the request.
      */
-    @NotNull(message = "Bank is required")
+    @NotBlank(message = "Bank name is required")
     String bankName;
 
     /**
      * The card number associated with the account.
      * Must be exactly 16 digits long and cannot be null.
      */
-    @NotNull(message = "Account number is required")
+    @NotBlank(message = "Account number is required")
     @Size(min = 16, max = 16, message = "Card number must be 16 digits")
     String cardNumber;
 
@@ -42,7 +43,7 @@ public class GetAccountsRequest {
      * The PIN associated with the account.
      * Must be exactly 4 digits long and cannot be null.
      */
-    @NotNull(message = "PIN is required")
+    @NotBlank(message = "PIN is required")
     @Size(min = 4, max = 4, message = "PIN must be 4 digits")
     String pin;
 }

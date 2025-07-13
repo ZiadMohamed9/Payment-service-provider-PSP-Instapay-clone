@@ -1,4 +1,4 @@
-package com.psp.instapay.common.exception;
+package com.psp.instapay.exception;
 
 /**
  * Exception thrown when a bank is not found in the system.

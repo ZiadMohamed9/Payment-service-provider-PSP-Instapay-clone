@@ -4,7 +4,7 @@ import com.psp.instapay.client.BankClient;
 import com.psp.instapay.config.NbeClientConfig;
 import com.psp.instapay.model.dto.request.TransactionRequest;
 import com.psp.instapay.model.dto.request.GetAccountsRequest;
-import com.psp.instapay.model.dto.response.ApiResponse;
+import com.psp.instapay.model.dto.response.ResponseDto;
 import com.psp.instapay.model.dto.response.GetAccountsResponse;
 import com.psp.instapay.model.dto.response.TransactionResponse;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -43,11 +43,11 @@ public interface NBEClient extends BankClient {
      * Retrieves customer details by their phone number.
      *
      * @param phoneNumber the phone number of the customer
-     * @return a ResponseEntity containing an ApiResponse with the customer details
+     * @return a ResponseEntity containing an ResponseDto with the customer details
      */
     @Override
     @PostMapping("/api/v1/customers/phone")
-    ResponseEntity<ApiResponse> getCustomerByPhoneNumber(@RequestBody String phoneNumber);
+    ResponseEntity<ResponseDto> getCustomerByPhoneNumber(@RequestBody String phoneNumber);
 
     /**
      * Prepares a transaction based on the provided request.

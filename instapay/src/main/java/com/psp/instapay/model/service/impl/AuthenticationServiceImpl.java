@@ -1,12 +1,12 @@
 package com.psp.instapay.model.service.impl;
 
 import com.psp.instapay.model.enums.Role;
-import com.psp.instapay.common.exception.AccountAlreadyExistsException;
+import com.psp.instapay.exception.AccountAlreadyExistsException;
 import com.psp.instapay.model.dto.request.LoginRequest;
 import com.psp.instapay.model.dto.request.SignUpRequest;
 import com.psp.instapay.model.dto.response.AuthenticationResponse;
 import com.psp.instapay.model.entity.User;
-import com.psp.instapay.common.mapper.UserMapper;
+import com.psp.instapay.mapper.UserMapper;
 import com.psp.instapay.model.repository.UserRepository;
 import com.psp.instapay.security.JwtService;
 import com.psp.instapay.model.service.AuthenticationService;

@@ -1,5 +1,6 @@
 package com.psp.instapay.model.dto.request;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,13 +21,13 @@ public class UpdateRoleRequest {
      * The username of the user whose role is being updated.
      * This field is required and cannot be null.
      */
-    @NotNull(message = "Username is required")
+    @NotBlank(message = "Username is required")
     private String username;
 
     /**
      * The new role to be assigned to the user.
      * This field is required and cannot be null.
      */
-    @NotNull(message = "Role is required")
+    @NotBlank(message = "Role is required")
     private String role;
 }

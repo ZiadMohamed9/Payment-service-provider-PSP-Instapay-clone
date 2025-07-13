@@ -1,4 +1,4 @@
-package com.psp.instapay.common.mapper;
+package com.psp.instapay.mapper;
 
 import com.psp.instapay.model.dto.AccountDTO;
 import com.psp.instapay.model.entity.Account;

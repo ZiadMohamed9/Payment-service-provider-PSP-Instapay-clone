@@ -1,4 +1,4 @@
-package com.psp.instapay.common.exception;
+package com.psp.instapay.exception;
 
 /**
  * Exception thrown when an invalid role is encountered in the system.

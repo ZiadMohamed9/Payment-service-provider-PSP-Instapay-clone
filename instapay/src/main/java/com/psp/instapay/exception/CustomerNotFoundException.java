@@ -1,4 +1,4 @@
-package com.psp.instapay.common.exception;
+package com.psp.instapay.exception;
 
 /**
  * Exception thrown when a customer is not found in the system.

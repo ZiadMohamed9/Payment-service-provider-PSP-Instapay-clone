@@ -1,7 +1,7 @@
 package com.psp.instapay.controller;
 
 import com.psp.instapay.model.dto.request.SendMoneyRequest;
-import com.psp.instapay.model.dto.response.ApiResponse;
+import com.psp.instapay.model.dto.response.ResponseDto;
 import com.psp.instapay.model.service.TransactionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,12 +26,12 @@ public class TransactionController {
      * Sends money based on the provided request details.
      *
      * @param request the SendMoneyRequest containing transaction details
-     * @return a ResponseEntity containing an ApiResponse with the transaction status and details
+     * @return a ResponseEntity containing an ResponseDto with the transaction status and details
      */
     @PostMapping("/send")
-    public ResponseEntity<ApiResponse> sendMoney(@Valid @RequestBody SendMoneyRequest request) {
+    public ResponseEntity<ResponseDto> sendMoney(@Valid @RequestBody SendMoneyRequest request) {
         return ResponseEntity.ok(
-                ApiResponse.builder()
+                ResponseDto.builder()
                         .status(HttpStatus.OK)
                         .data(transactionService.sendMoney(request))
                         .message("Transaction successful")
@@ -42,12 +42,12 @@ public class TransactionController {
     /**
      * Retrieves the transaction history for the user.
      *
-     * @return a ResponseEntity containing an ApiResponse with the transaction history
+     * @return a ResponseEntity containing an ResponseDto with the transaction history
      */
     @PostMapping("/history")
-    public ResponseEntity<ApiResponse> getTransactionHistory() {
+    public ResponseEntity<ResponseDto> getTransactionHistory() {
         return ResponseEntity.ok(
-                ApiResponse.builder()
+                ResponseDto.builder()
                         .status(HttpStatus.OK)
                         .data(transactionService.getTransactionHistory())
                         .message("Transaction history retrieved successfully")

@@ -5,10 +5,11 @@ import com.psp.instapay.model.enums.Role;
 import com.psp.instapay.model.repository.UserRepository;
 import com.psp.instapay.model.service.UserService;
 import com.psp.instapay.model.dto.UserDTO;
-import com.psp.instapay.common.exception.InvalidRoleException;
-import com.psp.instapay.common.exception.UserNotFoundException;
-import com.psp.instapay.common.mapper.UserMapper;
+import com.psp.instapay.exception.InvalidRoleException;
+import com.psp.instapay.exception.UserNotFoundException;
+import com.psp.instapay.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -54,14 +55,14 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * Retrieves a user by their username.
-     *
-     * @param username The username of the user to retrieve.
-     * @return The user details as a UserDTO.
-     * @throws UserNotFoundException If the user is not found with the given username.
-     */
+    * Retrieves the profile of the currently authenticated user.
+    *
+    * @return The user details as a UserDTO.
+    * @throws UserNotFoundException If the authenticated user is not found.
+    */
     @Override
-    public UserDTO getUserByUsername(String username) {
+    public UserDTO getUserProfile() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository.findByUsername(username)
                 .map(userMapper::toUserDTO)
                 .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));

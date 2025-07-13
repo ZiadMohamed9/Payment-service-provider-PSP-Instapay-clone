@@ -2,7 +2,7 @@ package com.psp.instapay.client;
 
 import com.psp.instapay.model.dto.request.TransactionRequest;
 import com.psp.instapay.model.dto.request.GetAccountsRequest;
-import com.psp.instapay.model.dto.response.ApiResponse;
+import com.psp.instapay.model.dto.response.ResponseDto;
 import com.psp.instapay.model.dto.response.GetAccountsResponse;
 import com.psp.instapay.model.dto.response.TransactionResponse;
 import org.springframework.http.ResponseEntity;
@@ -34,9 +34,9 @@ public interface BankClient {
      * Retrieves customer details by their phone number.
      *
      * @param phoneNumber the phone number of the customer
-     * @return a ResponseEntity containing an ApiResponse with the customer details
+     * @return a ResponseEntity containing an ResponseDto with the customer details
      */
-    ResponseEntity<ApiResponse> getCustomerByPhoneNumber(String phoneNumber);
+    ResponseEntity<ResponseDto> getCustomerByPhoneNumber(String phoneNumber);
 
     /**
      * Prepares a transaction based on the provided request.

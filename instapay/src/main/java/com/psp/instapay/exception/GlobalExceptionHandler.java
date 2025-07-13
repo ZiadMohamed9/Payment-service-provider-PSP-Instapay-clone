@@ -1,13 +1,14 @@
-package com.psp.instapay.controller;
+package com.psp.instapay.exception;
 
-import com.psp.instapay.common.exception.*;
-import com.psp.instapay.model.dto.response.ApiResponse;
+import com.psp.instapay.model.dto.response.ResponseDto;
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
@@ -23,8 +24,10 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,12 +38,31 @@ import java.util.Map;
  * and returns appropriate HTTP responses with error details.
  */
 @ControllerAdvice
-public class GlobalExceptionHandler {
+public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach((error) -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
+
+        ResponseDto apiResponse = ResponseDto.builder()
+                .status(HttpStatus.BAD_REQUEST)
+                .message("Validation error")
+                .data(errors)
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiResponse);
+    }
+
     @ExceptionHandler(FeignException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ApiResponse> handleFeignException(FeignException ex) {
+    public ResponseEntity<ResponseDto> handleFeignException(FeignException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.builder()
+                .body(ResponseDto.builder()
                         .status(HttpStatus.BAD_REQUEST)
                         .message("External service error: " + ex.request().httpMethod() + " " + ex.request().url())
                         .data(ex.contentUTF8())
@@ -49,9 +71,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccountNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<ApiResponse> handleAccountNotFoundException(AccountNotFoundException ex) {
+    public ResponseEntity<ResponseDto> handleAccountNotFoundException(AccountNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ApiResponse.builder()
+                .body(ResponseDto.builder()
                         .status(HttpStatus.NOT_FOUND)
                         .message(ex.getMessage())
                         .build());
@@ -59,9 +81,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CardNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<ApiResponse> handleCardNotFoundException(CardNotFoundException ex) {
+    public ResponseEntity<ResponseDto> handleCardNotFoundException(CardNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ApiResponse.builder()
+                .body(ResponseDto.builder()
                         .status(HttpStatus.NOT_FOUND)
                         .message(ex.getMessage())
                         .build());
@@ -69,9 +91,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccountAlreadyExistsException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ResponseEntity<ApiResponse> handleAccountAlreadyExistsException(AccountAlreadyExistsException ex) {
+    public ResponseEntity<ResponseDto> handleAccountAlreadyExistsException(AccountAlreadyExistsException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(ApiResponse.builder()
+                .body(ResponseDto.builder()
                         .status(HttpStatus.CONFLICT)
                         .message(ex.getMessage())
                         .build());
@@ -79,9 +101,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BankNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<ApiResponse> handleBankNotFoundException(BankNotFoundException ex) {
+    public ResponseEntity<ResponseDto> handleBankNotFoundException(BankNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ApiResponse.builder()
+                .body(ResponseDto.builder()
                         .status(HttpStatus.NOT_FOUND)
                         .message(ex.getMessage())
                         .build());
@@ -89,9 +111,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InsufficientBalanceException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ApiResponse> handleInsufficientBalanceException(InsufficientBalanceException ex) {
+    public ResponseEntity<ResponseDto> handleInsufficientBalanceException(InsufficientBalanceException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.builder()
+                .body(ResponseDto.builder()
                         .status(HttpStatus.BAD_REQUEST)
                         .message(ex.getMessage())
                         .build());
@@ -99,9 +121,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidRoleException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ApiResponse> handleInvalidRoleException(InvalidRoleException ex) {
+    public ResponseEntity<ResponseDto> handleInvalidRoleException(InvalidRoleException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.builder()
+                .body(ResponseDto.builder()
                         .status(HttpStatus.BAD_REQUEST)
                         .message(ex.getMessage())
                         .build());
@@ -109,9 +131,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(TransactionException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ApiResponse> handleTransactionException(TransactionException ex) {
+    public ResponseEntity<ResponseDto> handleTransactionException(TransactionException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.builder()
+                .body(ResponseDto.builder()
                         .status(HttpStatus.BAD_REQUEST)
                         .message(ex.getMessage())
                         .build());
@@ -119,9 +141,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<ApiResponse> handleUserNotFoundException(UserNotFoundException ex) {
+    public ResponseEntity<ResponseDto> handleUserNotFoundException(UserNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ApiResponse.builder()
+                .body(ResponseDto.builder()
                         .status(HttpStatus.NOT_FOUND)
                         .message(ex.getMessage())
                         .build());
@@ -129,9 +151,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CustomerNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<ApiResponse> handleCustomerNotFoundException(CustomerNotFoundException ex) {
+    public ResponseEntity<ResponseDto> handleCustomerNotFoundException(CustomerNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ApiResponse.builder()
+                .body(ResponseDto.builder()
                         .status(HttpStatus.NOT_FOUND)
                         .message(ex.getMessage())
                         .build());
@@ -139,7 +161,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ApiResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ResponseDto> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach((error) -> {
             String fieldName = ((FieldError) error).getField();
@@ -148,7 +170,7 @@ public class GlobalExceptionHandler {
         });
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.builder()
+                .body(ResponseDto.builder()
                         .status(HttpStatus.BAD_REQUEST)
                         .message("Validation error")
                         .data(errors)
@@ -157,9 +179,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ApiResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+    public ResponseEntity<ResponseDto> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.builder()
+                .body(ResponseDto.builder()
                         .status(HttpStatus.BAD_REQUEST)
                         .message("Malformed JSON request: " + ex.getMessage())
                         .build());
@@ -167,9 +189,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NoHandlerFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<ApiResponse> handleNoHandlerFoundException(NoHandlerFoundException ex) {
+    public ResponseEntity<ResponseDto> handleNoHandlerFoundException(NoHandlerFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ApiResponse.builder()
+                .body(ResponseDto.builder()
                         .status(HttpStatus.NOT_FOUND)
                         .message("The requested resource was not found: " + ex.getRequestURL())
                         .build());
@@ -177,9 +199,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BadCredentialsException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ResponseEntity<ApiResponse> handleBadCredentialsException(BadCredentialsException ex) {
+    public ResponseEntity<ResponseDto> handleBadCredentialsException(BadCredentialsException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ApiResponse.builder()
+                .body(ResponseDto.builder()
                         .status(HttpStatus.UNAUTHORIZED)
                         .message(ex.getMessage())
                         .build());
@@ -187,9 +209,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    public ResponseEntity<ApiResponse> handleAccessDeniedException(AccessDeniedException ex) {
+    public ResponseEntity<ResponseDto> handleAccessDeniedException(AccessDeniedException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(ApiResponse.builder()
+                .body(ResponseDto.builder()
                         .status(HttpStatus.FORBIDDEN)
                         .message("Access denied: " + ex.getMessage())
                         .build());
@@ -197,9 +219,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DisabledException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ResponseEntity<ApiResponse> handleDisabledException(DisabledException ex) {
+    public ResponseEntity<ResponseDto> handleDisabledException(DisabledException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ApiResponse.builder()
+                .body(ResponseDto.builder()
                         .status(HttpStatus.UNAUTHORIZED)
                         .message("Account is disabled")
                         .build());
@@ -207,9 +229,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(LockedException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ResponseEntity<ApiResponse> handleLockedException(LockedException ex) {
+    public ResponseEntity<ResponseDto> handleLockedException(LockedException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ApiResponse.builder()
+                .body(ResponseDto.builder()
                         .status(HttpStatus.UNAUTHORIZED)
                         .message("Account is locked")
                         .build());
@@ -217,9 +239,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AuthenticationException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ResponseEntity<ApiResponse> handleAuthenticationException(AuthenticationException ex) {
+    public ResponseEntity<ResponseDto> handleAuthenticationException(AuthenticationException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ApiResponse.builder()
+                .body(ResponseDto.builder()
                         .status(HttpStatus.UNAUTHORIZED)
                         .message("Authentication failed: " + ex.getMessage())
                         .build());
@@ -227,9 +249,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EntityNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<ApiResponse> handleEntityNotFoundException(EntityNotFoundException ex) {
+    public ResponseEntity<ResponseDto> handleEntityNotFoundException(EntityNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ApiResponse.builder()
+                .body(ResponseDto.builder()
                         .status(HttpStatus.NOT_FOUND)
                         .message(ex.getMessage())
                         .build());
@@ -237,9 +259,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ResponseEntity<ApiResponse> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
+    public ResponseEntity<ResponseDto> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(ApiResponse.builder()
+                .body(ResponseDto.builder()
                         .status(HttpStatus.CONFLICT)
                         .message("Database constraint violation: " + ex.getMostSpecificCause().getMessage())
                         .build());
@@ -247,9 +269,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataAccessException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ResponseEntity<ApiResponse> handleDataAccessException(DataAccessException ex) {
+    public ResponseEntity<ResponseDto> handleDataAccessException(DataAccessException ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.builder()
+                .body(ResponseDto.builder()
                         .status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .message("Database error: " + ex.getMostSpecificCause().getMessage())
                         .build());
@@ -257,9 +279,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ApiResponse> handleMissingServletRequestParameterException(MissingServletRequestParameterException ex) {
+    public ResponseEntity<ResponseDto> handleMissingServletRequestParameterException(MissingServletRequestParameterException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.builder()
+                .body(ResponseDto.builder()
                         .status(HttpStatus.BAD_REQUEST)
                         .message("Missing required parameter: " + ex.getParameterName())
                         .build());
@@ -267,9 +289,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ApiResponse> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
+    public ResponseEntity<ResponseDto> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.builder()
+                .body(ResponseDto.builder()
                         .status(HttpStatus.BAD_REQUEST)
                         .message("Invalid parameter type: " + ex.getName() + " should be of type " + ex.getRequiredType().getSimpleName())
                         .build());
@@ -277,7 +299,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ApiResponse> handleConstraintViolationException(ConstraintViolationException ex) {
+    public ResponseEntity<ResponseDto> handleConstraintViolationException(ConstraintViolationException ex) {
         Map<String, String> errors = new HashMap<>();
         ex.getConstraintViolations().forEach(violation -> {
             String propertyPath = violation.getPropertyPath().toString();
@@ -286,7 +308,7 @@ public class GlobalExceptionHandler {
         });
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.builder()
+                .body(ResponseDto.builder()
                         .status(HttpStatus.BAD_REQUEST)
                         .message("Validation error")
                         .data(errors)
@@ -295,9 +317,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
     @ResponseStatus(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
-    public ResponseEntity<ApiResponse> handleHttpMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException ex) {
+    public ResponseEntity<ResponseDto> handleHttpMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException ex) {
         return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
-                .body(ApiResponse.builder()
+                .body(ResponseDto.builder()
                         .status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
                         .message("Unsupported media type: " + ex.getContentType() + ". Supported types: " + ex.getSupportedMediaTypes())
                         .build());
@@ -305,9 +327,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
-    public ResponseEntity<ApiResponse> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException ex) {
+    public ResponseEntity<ResponseDto> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException ex) {
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
-                .body(ApiResponse.builder()
+                .body(ResponseDto.builder()
                         .status(HttpStatus.METHOD_NOT_ALLOWED)
                         .message("Method not allowed: " + ex.getMethod() + ". Supported methods: " + ex.getSupportedHttpMethods())
                         .build());
@@ -315,9 +337,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ApiResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
+    public ResponseEntity<ResponseDto> handleIllegalArgumentException(IllegalArgumentException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.builder()
+                .body(ResponseDto.builder()
                         .status(HttpStatus.BAD_REQUEST)
                         .message("Invalid argument: " + ex.getMessage())
                         .build());
@@ -325,9 +347,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ResponseEntity<ApiResponse> handleAllUncaughtException(Exception ex) {
+    public ResponseEntity<ResponseDto> handleAllUncaughtException(Exception ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.builder()
+                .body(ResponseDto.builder()
                         .status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .message("An unexpected error occurred: " + ex.getMessage())
                         .build());

@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/Payment Service Provider(Instapay clone).iml" filepath="$PROJECT_DIR$/.idea/Payment Service Provider(Instapay clone).iml" />
-      <module fileurl="file://$PROJECT_DIR$/cib-bank/cib-bank.iml" filepath="$PROJECT_DIR$/cib-bank/cib-bank.iml" />
     </modules>
   </component>
 </project>

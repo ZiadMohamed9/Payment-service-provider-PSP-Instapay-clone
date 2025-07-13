@@ -1,9 +1,6 @@
 package com.psp.instapay.model.dto.request;
 
-import jakarta.validation.constraints.DecimalMax;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,7 +20,7 @@ public class SendMoneyRequest {
      * The source account number from which the money will be sent.
      * Must be exactly 16 digits long and cannot be null.
      */
-    @NotNull(message = "Source account number is required")
+    @NotBlank(message = "Source account number is required")
     @Size(min = 16, max = 16, message = "Card number must be 16 digits")
     private String sourceAccountNumber;
 
@@ -31,7 +28,7 @@ public class SendMoneyRequest {
      * The destination account number to which the money will be sent.
      * Must be exactly 16 digits long and cannot be null.
      */
-    @NotNull(message = "Destination account number is required")
+    @NotBlank(message = "Destination account number is required")
     @Size(min = 16, max = 16, message = "Card number must be 16 digits")
     private String destinationAccountNumber;
 
@@ -40,7 +37,7 @@ public class SendMoneyRequest {
      * Must be greater than 0 and less than or equal to 50,000.
      * This field is required and cannot be null.
      */
-    @NotNull(message = "Transaction type is required")
+    @NotBlank(message = "Transaction type is required")
     @DecimalMin(value = "1", message = "Amount must be greater than 0")
     @DecimalMax(value = "50000", message = "Amount must be less than or equal to 50000")
     private Double amount;

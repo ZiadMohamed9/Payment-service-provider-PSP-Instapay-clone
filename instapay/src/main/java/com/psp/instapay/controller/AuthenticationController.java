@@ -1,6 +1,6 @@
 package com.psp.instapay.controller;
 
-import com.psp.instapay.model.dto.response.ApiResponse;
+import com.psp.instapay.model.dto.response.ResponseDto;
 import com.psp.instapay.model.dto.request.LoginRequest;
 import com.psp.instapay.model.dto.request.SignUpRequest;
 import com.psp.instapay.model.service.AuthenticationService;
@@ -27,13 +27,13 @@ public class AuthenticationController {
      * Registers a new user.
      *
      * @param request the SignUpRequest containing user registration details
-     * @return a ResponseEntity containing an ApiResponse with the registration status and user details
+     * @return a ResponseEntity containing an ResponseDto with the registration status and user details
      */
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse> register(@Valid @RequestBody SignUpRequest request) {
+    public ResponseEntity<ResponseDto> register(@Valid @RequestBody SignUpRequest request) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(ApiResponse
+                .body(ResponseDto
                         .builder()
                         .status(HttpStatus.CREATED)
                         .message("User Registered Successfully")
@@ -46,12 +46,12 @@ public class AuthenticationController {
      * Authenticates a user and logs them in.
      *
      * @param request the LoginRequest containing user login credentials
-     * @return a ResponseEntity containing an ApiResponse with the login status and user details
+     * @return a ResponseEntity containing an ResponseDto with the login status and user details
      */
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<ResponseDto> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(
-                ApiResponse
+                ResponseDto
                         .builder()
                         .status(HttpStatus.OK)
                         .message("User Logged In Successfully")

@@ -12,12 +12,11 @@ import java.util.List;
 public interface UserService extends UserDetailsService {
 
     /**
-     * Retrieves a user by their username.
+     * Retrieves the profile of the currently authenticated user.
      *
-     * @param username The username of the user to retrieve.
      * @return The user details as a UserDTO.
      */
-    UserDTO getUserByUsername(String username);
+    UserDTO getUserProfile();
 
     /**
      * Retrieves a user by their unique ID.
